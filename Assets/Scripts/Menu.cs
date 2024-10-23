@@ -1,11 +1,11 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
+﻿using TMPro;
+using UnityEngine;
 
 public class Menu : MonoBehaviour
 {
     [SerializeField] private string _playAgainText = "Play Again?";
     [SerializeField] private GameObject _gameOverText;
-    [SerializeField] private Text _playButtonText;
+    [SerializeField] private TextMeshProUGUI _playButtonText;
 
     private BrickArea _brickArea;
     private GameOverlay _gameOverlay;

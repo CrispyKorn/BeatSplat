@@ -7,7 +7,7 @@ public class GameOverlay : MonoBehaviour
     [SerializeField] private List<Image> _balls = new();
 
     private int _colorID = 0;
-    private int ballsLeft;
+    private int _ballsLeft;
 
     private void Awake()
     {
@@ -23,7 +23,7 @@ public class GameOverlay : MonoBehaviour
     {
         foreach (Image ball in _balls) ball.enabled = true;
 
-        ballsLeft = _balls.Count;
+        _ballsLeft = _balls.Count;
     }
 
     public void ChangeBallColours()
@@ -38,13 +38,13 @@ public class GameOverlay : MonoBehaviour
 
     public void RemoveBall()
     {
-        ballsLeft--;
+        _ballsLeft--;
 
-        if (ballsLeft < 0)
+        if (_ballsLeft < 0)
         {
             Locator.Instance.Menu.ReenableMainMenu();
             Locator.Instance.Menu.MoveToGameOverScreen();
         }
-        else _balls[_balls.Count - ballsLeft - 1].enabled = false;
+        else _balls[_balls.Count - _ballsLeft - 1].enabled = false;
     }
 }
