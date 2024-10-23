@@ -1,70 +1,48 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public abstract class PowerUp : MonoBehaviour
 {
-    /*
-     * 
-     * This script is for powerups
-     * This is the base for how a powerup can be interacted with
-     * 
-     */
-
-    //This is a link back to the powerup manager
-    [HideInInspector]
-    public PowerUpManager powerUpManager;
-
+    protected PowerUpManager _powerUpManager;
     
-    [Header("Length of a power-up")]
-    [SerializeField]
-    [Range(0f, 60f)]
-    private float timeLimit = 5f;
+    [Tooltip("Duration of a power-up in seconds.")]
+    [SerializeField, Range(0f, 60f)] private float _duration = 5f;
 
-    //Needed to change the gravity
-    private Rigidbody2D body;
+    private Rigidbody2D _body;
 
-
-    public float TimeLimit => timeLimit;
-
+    public float Duration => _duration;
 
     public void Awake()
     {
-        body = GetComponent<Rigidbody2D>();
+        _body = GetComponent<Rigidbody2D>();
+        _powerUpManager = Locator.Instance.PowerUpManager;
     }
 
-    //This is to set the gravity of the power up, the manager interacts with this
     public void SetGravity(float gravity)
     {
-        body.gravityScale = gravity;
+        _body.gravityScale = gravity;
     }
 
-
-    //This it to activate the power up and to deactivate
     public abstract void ActivatePowerUp();
     public abstract void DeactivatePowerUp();
 
-
-    //THis is for when the object is out of view
     public void OnBecameInvisible()
     {
-        GameObject.Destroy(gameObject, 1f);
+        //This is for when the object is out of view
+        Destroy(gameObject, 1f);
     }
 
-
-    //This if for when the powerup hits the player
     public void OnCollisionEnter2D(Collision2D collision)
     {
-        if(collision.gameObject.layer == powerUpManager.PlayerLayer)
+        //This is for when the powerup hits the player
+        if (collision.gameObject.layer == _powerUpManager.PlayerLayer)
         {
-            powerUpManager.ActivatePowerUp(this);
+            _powerUpManager.ActivatePowerUp(this);
         }
     }
 
-
-    //This is used to freeze the power up in a position
     public void Freeze()
     {
-        body.constraints = RigidbodyConstraints2D.FreezeAll;
+        //This is used to freeze the power up in a position
+        _body.constraints = RigidbodyConstraints2D.FreezeAll;
     }
 }

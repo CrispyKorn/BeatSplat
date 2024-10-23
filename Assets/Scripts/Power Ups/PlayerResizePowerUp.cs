@@ -1,24 +1,20 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerResizePowerUp : PowerUp
 {
-    [Header("This is for how big the player can be, -1 is half the size while 1 is double")]
-    [SerializeField]
-    [Range(-2f, 2f)]
-    private float extendSize = 0.5f;
+    [Tooltip("This is for how big the player can be, -1 is half the size while 1 is double size.")]
+    [SerializeField, Range(-2f, 2f)] private float _extendAmount = 0.5f;
 
-    private float extendedSize;
+    private float _extendedSize;
 
     public override void ActivatePowerUp()
     {
-        extendedSize = powerUpManager.Controller.transform.localScale.x * extendSize;
-        powerUpManager.Controller.ExtendPaddle(extendedSize);
+        _extendedSize = _powerUpManager.Controller.transform.localScale.x * _extendAmount;
+        _powerUpManager.Controller.ExtendPaddle(_extendedSize);
     }
 
     public override void DeactivatePowerUp()
     {
-        powerUpManager.Controller.ExtendPaddle(-extendedSize);
+        _powerUpManager.Controller.ExtendPaddle(-_extendedSize);
     }
 }

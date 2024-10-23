@@ -1,86 +1,67 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using TMPro;
-using UnityEngine;
-using UnityEngine.SceneManagement;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class Menu : MonoBehaviour
 {
-    public static Controller controller;
-    public static Menu MainMenu;
-    public static GameOverlay gameOverlay;
-    private static GameObject mainMenu;
+    [SerializeField] private string _playAgainText = "Play Again?";
+    [SerializeField] private GameObject _gameOverText;
+    [SerializeField] private Text _playButtonText;
 
-    public string playAgainText = "Play Again?";
+    private BrickArea _brickArea;
+    private GameOverlay _gameOverlay;
+    private bool _resetGame = false;
+    private Controller _controller;
 
-    private GameObject gameOverText;
-    private Text playButtonText;
-
-    private BrickArea brickArea;
-
-    private bool resetGame = false;
-    
-
+    private void Awake()
+    {
+        Locator.Instance.RegisterInstance(this);
+    }
 
     public void Start()
     {
-        brickArea = FindObjectOfType<BrickArea>();
+        _brickArea = Locator.Instance.BrickArea;
+        _gameOverlay = Locator.Instance.GameOverlay;
+        _controller = Locator.Instance.Controller;
 
-        MainMenu = this;
-        mainMenu = gameObject;
-        gameOverlay = FindObjectOfType<GameOverlay>();
+        _gameOverText.SetActive(false);
 
-        gameOverText = GameObject.Find("Game Over");
-        gameOverText.SetActive(false);
-        playButtonText = GameObject.Find("Play Game").GetComponentInChildren<Text>();
-
-
-        controller = FindObjectOfType<Controller>();
-
-        if (controller != null)
-            controller.enablePlay = false;
-        else
-            Debug.LogError("No controller found for main menu canvas!");
+        if (_controller is Controller) _controller.PlayEnabled = false;
+        else Debug.LogError("No controller found for main menu canvas!");
     }
 
-    public static void ReenableMainMenu()
+    public void ReenableMainMenu()
     {
-        mainMenu.SetActive(true);
+        gameObject.SetActive(true);
     }
 
-    public void GameOverScreen()
+    public void MoveToGameOverScreen()
     {
-        playButtonText.text = playAgainText;
-        gameOverText.SetActive(true);
+        _playButtonText.text = _playAgainText;
+        _gameOverText.SetActive(true);
 
-        controller.enablePlay = false;
-        resetGame = true;
+        _controller.PlayEnabled = false;
+        _resetGame = true;
     }
-
 
     public void Exit()
     {
         Application.Quit();
     }
 
-
     public void EnableGame()
     {
-        if (resetGame)
-            brickArea.ResetBricks();
+        if (_resetGame)
+            _brickArea.ResetBricks();
 
-        resetGame = false;
+        _resetGame = false;
 
-        controller.enablePlay = true;
+        _controller.PlayEnabled = true;
 
-        gameOverText.SetActive(true);
+        _gameOverText.SetActive(true);
 
-
-        gameOverlay.Setup();
-        gameOverlay.enabled = true;
-        gameOverlay.ChangeBallColours();
+        _gameOverlay.Setup();
+        _gameOverlay.enabled = true;
+        _gameOverlay.ChangeBallColours();
 
         gameObject.SetActive(false);
     }

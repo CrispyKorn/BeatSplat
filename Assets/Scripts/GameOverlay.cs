@@ -1,56 +1,50 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
+using UnityEngine.UI;
 
 public class GameOverlay : MonoBehaviour
 {
-    private int color = 0;
-    public List<UnityEngine.UI.Image> balls = new List<UnityEngine.UI.Image>();
-    public int ballsLeft;
+    [SerializeField] private List<Image> _balls = new();
 
+    private int _colorID = 0;
+    private int ballsLeft;
 
-    public void Awake()
+    private void Awake()
     {
-        foreach(UnityEngine.UI.Image ball in balls)
-            ball.enabled = false;
+        Locator.Instance.RegisterInstance(this);
     }
 
+    public void Start()
+    {
+        foreach(Image ball in _balls) ball.enabled = false;
+    }
 
     public void Setup()
     {
-        foreach (UnityEngine.UI.Image ball in balls)
-            ball.enabled = true;
+        foreach (Image ball in _balls) ball.enabled = true;
 
-        ballsLeft = balls.Count;
+        ballsLeft = _balls.Count;
     }
-
 
     public void ChangeBallColours()
     {
-        color++;
-        if (color == Menu.controller.theme.brickColours.Count)
-            color = 0;
+        _colorID++;
+        if (_colorID == Locator.Instance.Controller.Theme.brickColours.Count) _colorID = 0;
 
-        Color actualColor = Menu.controller.theme.brickColours[color];
+        Color actualColor = Locator.Instance.Controller.Theme.brickColours[_colorID];
 
-        foreach (UnityEngine.UI.Image ball in balls)
-            ball.color = actualColor;
+        foreach (Image ball in _balls) ball.color = actualColor;
     }
-
 
     public void RemoveBall()
     {
         ballsLeft--;
 
-        if(ballsLeft < 0)
+        if (ballsLeft < 0)
         {
-            Menu.ReenableMainMenu();
-            Menu.MainMenu.GameOverScreen();
+            Locator.Instance.Menu.ReenableMainMenu();
+            Locator.Instance.Menu.MoveToGameOverScreen();
         }
-        else
-        {
-            balls[balls.Count - ballsLeft - 1].enabled = false;
-        }
+        else _balls[_balls.Count - ballsLeft - 1].enabled = false;
     }
 }

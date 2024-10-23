@@ -1,56 +1,38 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class TimerBar : MonoBehaviour
 {
-    private float maxTime = 100f;
-    private float timeLeft;
-    private bool active = false;
-
-    private Transform frontOfBar;
-
-
     //This is used to allow the timer to tick forward, if not set, it wont move
-    [HideInInspector]
-    public bool Active { get => active; set => active = value; }
+    public bool Active { get => _active; set => _active = value; }
 
     public float TimeLeft
     {
-        get => timeLeft;
+        get
+        {
+            return _timeLeft;
+        }
         set
         {
-            maxTime = value;
-            timeLeft = value;
+            _maxTime = value;
+            _timeLeft = value;
         }
     }
 
+    [Tooltip("The timer bar used to show the beat.")]
+    [SerializeField] private Transform _frontOfBar;
 
-    // Start is called before the first frame update
-    void Awake()
+    private float _maxTime = 100f;
+    private float _timeLeft;
+    private bool _active = false;
+
+    private void Update()
     {
-        frontOfBar = gameObject.transform.Find("Frontbar");
-    }
+        if (!_active) return;
 
+        _timeLeft -= Time.unscaledDeltaTime;
 
+        if (_timeLeft < 0) _timeLeft = 0;
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (active)
-        {
-            timeLeft -= Time.unscaledDeltaTime;         //move the time down
-
-            if (timeLeft < 0)           //Make sure the timer doesnt loop around past zero
-            {                               //Shouldnt be an issue, but to be safe
-                timeLeft = 0;
-            }
-
-            Vector2 temp = frontOfBar.localScale;           //Work out where to move the slider to
-            temp.x = timeLeft / maxTime;
-
-            frontOfBar.localScale = temp;
-        }
+        _frontOfBar.localScale = new Vector2(_timeLeft / _maxTime, _frontOfBar.localScale.y);
     }
 }

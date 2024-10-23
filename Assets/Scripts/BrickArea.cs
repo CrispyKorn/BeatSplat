@@ -1,73 +1,108 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class BrickArea : MonoBehaviour {
+public class BrickArea : MonoBehaviour 
+{
+    [Tooltip("The brick prefab to spawn.")]
+    [SerializeField] private GameObject _brick;
+    [Tooltip("The size of each brick in units.")]
+    [SerializeField] private Vector2 _brickSize = new Vector2(0.8f, 0.5f);
+    [Tooltip("The gap between bricks in units.")]
+    [SerializeField] private float _gap = 0.3f;
+    [Tooltip("The amount to stagger bricks in units.")]
+    [SerializeField] private float _stagger = 0.0f;
 
-    public GameObject brick;
-    public Vector2 brickSize = new Vector2(0.8f, 0.5f);
-    public float gap = 0.3f;
-    public float stagger = 0.0f;
+    private Dictionary<Vector2Int, Brick> _grid;
 
-    private Dictionary<Vector2Int, Brick> grid;
-
-    int getXCount(){
-        return (int) Mathf.Floor(transform.localScale.x / (brickSize.x + gap));
+    private void Awake()
+    {
+        Locator.Instance.RegisterInstance(this);
     }
 
-    int getYCount(){
-        return (int) Mathf.Floor(transform.localScale.y / (brickSize.y + gap));
+    private void Start()
+    {
+        SetupBricks();
+    }
+    
+    private void OnDrawGizmos()
+    {
+        // Uses the location generator to render a wireframe in the editor
+
+        Gizmos.color = Color.magenta;
+        Gizmos.DrawWireCube(transform.position, transform.localScale);
+
+        Gizmos.color = Color.cyan;
+        foreach (var brickPos in GenerateBrickPositions().Values)
+        {
+            Gizmos.DrawWireCube(brickPos, new Vector3(_brickSize.x, _brickSize.y, 0));
+        }
     }
 
-    // Generate a grid of brick locations using the parameters, location, and size provided
-    // This method takes a Func<Vector3>, which will recieve the actual brick positions
-    // Think of it kind of like passing some code to this method as a parameter,
-    // this method can give the brick positions to that other code without needing to
-    // allocate, return, and then iterate over a list!
-    Dictionary<Vector2Int, T> GenerateBricks<T>(Func<Vector3, T> handler) {
-        Dictionary<Vector2Int, T> grid = new Dictionary<Vector2Int, T>();
-        int xCount = getXCount();
-        int yCount = getYCount(); ;
-        float totalWidth = brickSize.x * xCount + gap * (xCount - 1);
-        float totalHeight = brickSize.y * yCount + gap * (yCount - 1);
-        for (int x = 0; x < xCount; x++){
-            for (int y = 0; y < yCount; y++){
+    private int GetXCount()
+    {
+        return Mathf.FloorToInt(transform.localScale.x / (_brickSize.x + _gap));
+    }
+
+    private int GetYCount()
+    {
+        return Mathf.FloorToInt(transform.localScale.y / (_brickSize.y + _gap));
+    }
+
+    private Dictionary<Vector2Int, Vector3> GenerateBrickPositions() 
+    {
+        Dictionary<Vector2Int, Vector3> grid = new();
+
+        int horizontalBrickCount = GetXCount();
+        int verticalBrickCount = GetYCount();
+
+        float totalBrickWidth = _brickSize.x * horizontalBrickCount;
+        float totalGapWidth = _gap * (horizontalBrickCount - 1);
+        float totalWidth = totalBrickWidth + totalGapWidth;
+
+        float totalBrickHeight = _brickSize.y * verticalBrickCount;
+        float totalGapHeight = _gap * (verticalBrickCount - 1);
+        float totalHeight = totalBrickHeight + totalGapHeight;
+
+        for (var x = 0; x < horizontalBrickCount; x++)
+        {
+            for (var y = 0; y < verticalBrickCount; y++)
+            {
+                float stagger = (y % 2 == 0) ? _stagger : -_stagger;
+                float halfBrickWidth = _brickSize.x / 2f;
+                float singleBrickTotalWidth = _brickSize.x + _gap;
+                float halfTotalWidth = totalWidth / 2f;
+                float brickPositionOffsetX = halfBrickWidth + (singleBrickTotalWidth * x) - halfTotalWidth;
+
+                float halfBrickHeight = _brickSize.y / 2f;
+                float singleBrickTotalHeight = _brickSize.y + _gap;
+                float halfTotalHeight = totalHeight / 2f;
+                float brickPositionOffsetY = halfBrickHeight + (singleBrickTotalHeight * y) - halfTotalHeight;
+
                 Vector3 pos = transform.position;
-                pos.x += y % 2 == 0 ? stagger : -stagger;
-                pos.x += brickSize.x / 2 + (brickSize.x + gap) * x - totalWidth / 2;
-                pos.y += brickSize.y / 2 + (brickSize.y + gap) * y - totalHeight / 2;
-                grid.Add(new Vector2Int(x, y), handler(pos));
+                pos.x += brickPositionOffsetX + stagger;
+                pos.y += brickPositionOffsetY;
+
+                grid.Add(new Vector2Int(x, y), pos);
             }
         }
+
         return grid;
     }
 
-    // Uses the location generator to render a wireframe in the editor
-    void OnDrawGizmos() {
-        Gizmos.color = Color.magenta;
-        Gizmos.DrawWireCube(transform.position, transform.localScale);
-        Gizmos.color = Color.cyan;
-        GenerateBricks<object>((Vector3 v) => {
-            Gizmos.DrawWireCube(v, new Vector3(brickSize.x, brickSize.y, 0));
-            return null;
-        });
-    }
-
-
-    // Actually spawns the brick objects at the generated locations when the script starts
-    void Start() {
-        SetupBricks();
-    }
-
-
-    public void ResetBricks()
+    private Dictionary<Vector2Int, Brick> GenerateBricks(Dictionary<Vector2Int, Vector3> brickPositions, Transform container)
     {
-        DestroyAllBricks();
-        SetupBricks();
-    }
+        Dictionary<Vector2Int, Brick> bricks = new();
 
+        foreach (var brickPos in brickPositions.Keys)
+        {
+            var brick = Instantiate(_brick, brickPositions[brickPos], Quaternion.identity, container); // Spawn brick in container at generated location
+            brick.transform.localScale = new Vector3(_brickSize.x, _brickSize.y, 0); // Make the brick adopt the size defined in this script's parameters
+
+            bricks.Add(brickPos, brick.GetComponent<Brick>());
+        }
+
+        return bricks;
+    }
 
     private void SetupBricks()
     {
@@ -76,48 +111,35 @@ public class BrickArea : MonoBehaviour {
         // the sizer of the region and scale makes child objects wonky
         var container = new GameObject("Brick container");
 
-        //var grid = GenerateBricks((Vector3 v) => {
-        grid = GenerateBricks((Vector3 v) => {
+        _grid = GenerateBricks(GenerateBrickPositions(), container.transform);
 
-            // Spawn brick in container at generated location
-            var brick = Instantiate(this.brick, v, Quaternion.identity, container.transform);
-
-            // Make the brick adopt the size defined in this script's parameters
-            brick.transform.localScale = new Vector3(brickSize.x, brickSize.y, 0);
-
-            return brick.GetComponent<Brick>();
-        });
-
-        foreach (var key in grid.Keys)
+        // Assign brick neighbours
+        foreach (var key in _grid.Keys)
         {
-            var brick = grid[key];
-            if (grid.ContainsKey(key + Vector2Int.left)) brick.addNeighbour(grid[key + Vector2Int.left]);
-            if (grid.ContainsKey(key + Vector2Int.right)) brick.addNeighbour(grid[key + Vector2Int.right]);
-            if (grid.ContainsKey(key + Vector2Int.up)) brick.addNeighbour(grid[key + Vector2Int.up]);
-            if (grid.ContainsKey(key + Vector2Int.down)) brick.addNeighbour(grid[key + Vector2Int.down]);
+            var brick = _grid[key];
+
+            if (_grid.ContainsKey(key + Vector2Int.left)) brick.AddNeighbour(_grid[key + Vector2Int.left]);
+            if (_grid.ContainsKey(key + Vector2Int.right)) brick.AddNeighbour(_grid[key + Vector2Int.right]);
+            if (_grid.ContainsKey(key + Vector2Int.up)) brick.AddNeighbour(_grid[key + Vector2Int.up]);
+            if (_grid.ContainsKey(key + Vector2Int.down)) brick.AddNeighbour(_grid[key + Vector2Int.down]);
 
         }
     }
 
-
-
     private void DestroyAllBricks()
     {
-
-        foreach (var key in grid.Keys)
+        foreach (var key in _grid.Keys)
         {
-            var brick = grid[key];
-            if(brick != null)
-                Destroy(brick.gameObject);
+            var brick = _grid[key];
+            if (brick != null) Destroy(brick.gameObject);
         }
 
-        //var list = grid.Values.ToList();
-        //for(int i = list.Count - 1; i >= 0; i--)
-        //{
-        //    Destroy(list[i].gameObject);
-        //}
+        _grid.Clear();
+    }
 
-
-        grid.Clear();
+    public void ResetBricks()
+    {
+        DestroyAllBricks();
+        SetupBricks();
     }
 }

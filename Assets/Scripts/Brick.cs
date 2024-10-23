@@ -1,66 +1,72 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditorInternal;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Brick : MonoBehaviour {
+public class Brick : MonoBehaviour 
+{
+    [Tooltip("Colour ID in theme's brick colour list.")]
+    [SerializeField] private int _colorId;
 
-    // Colour ID in theme's brick colour list
-    public int colorId;
-    Color color;
+    private readonly float _flashDuration = 0.1f;
+    private float _lastFlashTime = -1000f;
+    private List<Brick> _neighbours = new();
+    private SpriteRenderer _sprite;
+    private Controller _controller;
 
-    readonly float flashDuration = 0.1f;
-    float lastFlashTime = -1000f;
-    List<Brick> neighbours = new List<Brick>();
-
-    SpriteRenderer sprite;
-    Controller controller;
-
-    void Start() {
-        controller = FindObjectOfType<Controller>();
-        sprite = GetComponent<SpriteRenderer>();
-        colorId = controller.theme.RandomColourID;
- 
+    private void Start() 
+    {
+        _controller = Locator.Instance.Controller;
+        _sprite = GetComponent<SpriteRenderer>();
+        _colorId = _controller.Theme.RandomColourID;
     }
 
-    private void Update(){
-        float sinceFlash = Mathf.Min(Time.time - lastFlashTime, flashDuration);
-        var mainColor = controller.theme.brickColours[colorId];
-        sprite.color = Color.Lerp(controller.theme.foreground, mainColor, sinceFlash / flashDuration);
+    private void Update()
+    {
+        float secondsSinceFlash = Mathf.Min(Time.time - _lastFlashTime, _flashDuration);
+        Color mainColor = _controller.Theme.brickColours[_colorId];
+        _sprite.color = Color.Lerp(_controller.Theme.foreground, mainColor, secondsSinceFlash / _flashDuration);
     }
 
-    public void addNeighbour(Brick brick){
-        if (brick != null) neighbours.Add(brick);
+    private void HandleFlashSpread(List<Brick> affectedBricks)
+    {
+        _lastFlashTime = Time.time;
+        affectedBricks.Add(this);
+        DelayFlashSpread(affectedBricks);
     }
 
-    public void HandleBounce(int ballColor) { 
-        if (colorId == ballColor) {
-            controller.HandleBrickBreak(transform.position);
-            foreach (var brick in neighbours) {
-                brick.neighbours.Remove(this);
+    private async void DelayFlashSpread(List<Brick> affectedBricks)
+    {
+        await Awaitable.WaitForSecondsAsync(0.01f);
+
+        foreach (var brick in _neighbours.FindAll(b => !affectedBricks.Contains(b)))
+        {
+            brick.HandleFlashSpread(affectedBricks);
+        }
+    }
+
+    public void AddNeighbour(Brick brick)
+    {
+        if (brick != null) _neighbours.Add(brick);
+    }
+
+    public void HandleBounce(int ballColor)
+    {
+        if (_colorId == ballColor)
+        {
+            _controller.HandleBrickBreak(transform.position);
+
+            foreach (var brick in _neighbours)
+            {
+                brick._neighbours.Remove(this);
                 brick.StartFlash();
             }
+
             Destroy(gameObject);
         }
         else StartFlash();
     }
 
-
-    public void StartFlash(){
+    public void StartFlash()
+    {
         HandleFlashSpread(new List<Brick>());
     }
-
-    void HandleFlashSpread(List<Brick> seen){
-        lastFlashTime = Time.time;
-        seen.Add(this);        
-        StartCoroutine(DelayFlashSpread(seen));
-    }
-
-    IEnumerator DelayFlashSpread(List<Brick> seen){
-        yield return new WaitForSeconds(0.01f);
-        foreach (var brick in neighbours.FindAll(b => !seen.Contains(b)))
-            brick.HandleFlashSpread(seen);
-    }
-
-
 }

@@ -1,21 +1,17 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class GravityToBallPowerUp : PowerUp
 {
-    [Header("Gravity to apply to ball")]
-    [SerializeField]
-    [Range(0f, 1f)]
-    private float gravity = 0.4f;
+    [Tooltip("Gravity to apply to ball")]
+    [SerializeField, Range(0f, 1f)] private float _gravity = 0.4f;
 
     public override void ActivatePowerUp()
     {
-        powerUpManager.Controller.AddGravityToBall(gravity);
+        _powerUpManager.Controller.AddGravityToBall(_gravity);
     }
 
     public override void DeactivatePowerUp()
     {
-        powerUpManager.Controller.AddGravityToBall(-gravity);
+        _powerUpManager.Controller.AddGravityToBall(-_gravity);
     }
 }
