@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class TimerBar : MonoBehaviour
 {
@@ -25,14 +26,15 @@ public class TimerBar : MonoBehaviour
     private float _timeLeft;
     private bool _active = false;
 
+    public event Action<TimerBar> OnTimerFinished;
+
     private void Update()
     {
         if (!_active) return;
 
         _timeLeft -= Time.unscaledDeltaTime;
 
-        if (_timeLeft < 0) _timeLeft = 0;
-
-        _frontOfBar.localScale = new Vector2(_timeLeft / _maxTime, _frontOfBar.localScale.y);
+        if (_timeLeft < 0) OnTimerFinished?.Invoke(this);
+        else _frontOfBar.localScale = new Vector2(_timeLeft / _maxTime, _frontOfBar.localScale.y);
     }
 }

@@ -10,6 +10,7 @@ public class Locator : MonoBehaviour
     public Menu Menu { get; private set; }
     public GameOverlay GameOverlay { get; private set; }
     public BrickArea BrickArea { get; private set; }
+    public BeatManager BeatManager { get; private set; }
 
     private void Awake()
     {
@@ -45,5 +46,10 @@ public class Locator : MonoBehaviour
     public void RegisterInstance(BrickArea instance)
     {
         if (instance is BrickArea) BrickArea = instance;
+    }
+
+    public void RegisterInstance(BeatManager instance)
+    {
+        if (instance is BeatManager) BeatManager = instance;
     }
 }

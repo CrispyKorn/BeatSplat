@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 public class Ball : MonoBehaviour 
 {
@@ -12,11 +13,12 @@ public class Ball : MonoBehaviour
     private Collider2D _ballCollider;
     private Rigidbody2D _ballBody;
     private SpriteRenderer _ballRenderer;
-    private bool _multiColourMode = false;
     private int _colorID = 0; // Current colour ID in theme's brick colour list
     private Controller _controller;
 
     public bool Served { get; private set; } = false;
+
+    public event Action<Ball> OnDestroyed;
 
     private void Awake()
     {
@@ -62,7 +64,7 @@ public class Ball : MonoBehaviour
         Served = true;
         _ballCollider.isTrigger = false;
         _ballBody.bodyType = RigidbodyType2D.Dynamic;
-        _ballBody.linearVelocity = new Vector2(Random.Range(-1f, 1f), 1f).normalized * _speed;
+        _ballBody.linearVelocity = new Vector2(UnityEngine.Random.Range(-1f, 1f), 1f).normalized * _speed;
     }
 
     void OnCollisionEnter2D(Collision2D hit) 
@@ -75,14 +77,14 @@ public class Ball : MonoBehaviour
         {
             foreach (ContactPoint2D contact in hit.contacts)
             {
-                SplatterPaint(contact.point);
+                SplatterPaint(new Vector3(contact.point.x, contact.point.y, 0f));
             }
         }
 
         if (brick != null) brick.HandleBounce(_colorID);
     }
 
-    private void SplatterPaint(Vector2 hit)
+    private void SplatterPaint(Vector3 hit)
     {
         if (s_splatParticalSystem != null)
         {
@@ -98,8 +100,12 @@ public class Ball : MonoBehaviour
         _ballBody.gravityScale += gravity;
     }
 
-    public void SetMultiColourMode(bool mode) 
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        _multiColourMode = mode;
+        if (collision.gameObject.CompareTag("DeathZone"))
+        {
+            OnDestroyed?.Invoke(this);
+            Destroy(gameObject);
+        }
     }
 }

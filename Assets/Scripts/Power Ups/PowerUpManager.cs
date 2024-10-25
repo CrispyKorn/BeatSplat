@@ -20,7 +20,7 @@ public class PowerUpManager : MonoBehaviour
     public int PlayerLayer => _controller.gameObject.layer; // This is to get the player layer, this is used so a power up knows it hit the player and nothing else
 
     [Tooltip("This is for how many power ups to think ahead for, this makes sure we dont see the same power up in at least # of moves")]
-    [SerializeField] private int rememberedPowerUps = 3;
+    [SerializeField] private int _rememberedPowerUps = 3;
     [Tooltip("Speed of falling power-ups in units/sec.")]
     [SerializeField, Range(0f, 2f)] public float _gravityPowerUp = 0.8f;
     [Tooltip("Timerbar used to display the time left on a power-up")]
@@ -43,14 +43,14 @@ public class PowerUpManager : MonoBehaviour
     {
         _controller = Locator.Instance.Controller;
 
-        if (rememberedPowerUps > _powerUpList.Count) rememberedPowerUps = _powerUpList.Count;
+        if (_rememberedPowerUps > _powerUpList.Count) _rememberedPowerUps = _powerUpList.Count;
 
         RefreshNextPowerUps();
     }
 
     private void RefreshNextPowerUps()
     {
-        while (_upcomingPowerups.Count < rememberedPowerUps)
+        while (_upcomingPowerups.Count < _rememberedPowerUps)
         {
             int next = Random.Range(0, _powerUpList.Count);
 
@@ -60,7 +60,7 @@ public class PowerUpManager : MonoBehaviour
 
     // This is used when the controller thinks a power up should come out of a brick
     // Creates the power up and randomly chooses one, sets all the settings it needs
-    public void HitBrick(Vector2 hitBrick)
+    public void SpawnPowerup(Vector2 hitBrick)
     {
         if (_powerUpList.Count > 0)
         {
@@ -99,9 +99,16 @@ public class PowerUpManager : MonoBehaviour
         //Make sure the powerup and the timer are set, add to the list of activated power ups and also move to the correct location/holder
         if (activatedPowerUp.powerUp is PowerUp && activatedPowerUp.timer is TimerBar)
         {
+            if (activatedPowerUp.timer.TimeLeft > 0f) activatedPowerUp.timer.OnTimerFinished += RemovePowerUp;
             MoveToHolder(activatedPowerUp, _powerUpHolders[_activatedPowerUps.Count]);
             _activatedPowerUps.Add(activatedPowerUp);
         }
+    }
+
+    private void RemovePowerUp(TimerBar obj)
+    {
+        PowerUpInfo powerUp = _activatedPowerUps.Find(p => p.timer == obj);
+        RemoveActivatedPower(powerUp);
     }
 
     //This is to deactivate and remove a power up
@@ -144,18 +151,7 @@ public class PowerUpManager : MonoBehaviour
 
         for (var i = 0; i < _activatedPowerUps.Count; i++)
         {
-            if (_activatedPowerUps[i].timer.TimeLeft <= 0 && _activatedPowerUps[i].timer.Active)
-            {
-                removePowerUp.Add(_activatedPowerUps[i]);
-                continue;
-            }
-
             MoveToHolder(_activatedPowerUps[i], _powerUpHolders[i]);
-        }
-
-        foreach (var powerUpInfo in removePowerUp)
-        {
-            RemoveActivatedPower(powerUpInfo);
         }
     }
 }

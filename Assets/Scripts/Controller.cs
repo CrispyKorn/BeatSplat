@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System;
+using UnityEngine.UIElements;
 
 public class Controller : MonoBehaviour 
 {
@@ -13,8 +14,6 @@ public class Controller : MonoBehaviour
     [SerializeField] private float _moveSpeed = 8f;
     [Tooltip("The ball to use.")]
     [SerializeField] private GameObject _ballPrefab;
-    [Tooltip(".")]
-    [SerializeField] private GameObject _changeIndicator;
     [Tooltip("Music that plays preceeding ball launch.")]
     [SerializeField] private AudioSource _preLaunchLoop;
     [Tooltip("Music that plays post ball launch.")]
@@ -25,9 +24,9 @@ public class Controller : MonoBehaviour
     [SerializeField] private AudioSource _melodySource;
     [Tooltip("The sound that plays during the countdown.")]
     [SerializeField] private AudioClip _countdownSound;
-    [Tooltip(".")]
+    [Tooltip("The sound that plays when the ball is ready to be released.")]
     [SerializeField] private AudioClip _arpUpSound;
-    [Tooltip(".")]
+    [Tooltip("The sound that plays when all balls are lost.")]
     [SerializeField] private AudioClip _arpDownSound;
     [Tooltip("The sounds that play when a ball hits the paddle.")]
     [SerializeField] private List<AudioClip> _bounceSounds;
@@ -40,9 +39,7 @@ public class Controller : MonoBehaviour
     private PowerUpManager _powerUpManager = null;
     private Rigidbody2D _body;
     private Ball _heldBall;
-    private float _lastTickMod;
-    private int _beats = 0; // Metronome pulses
-    private float _lastBeatMod;
+    private BeatManager _beatManager;
 
     public Theme Theme { get => _theme; }
 
@@ -53,11 +50,13 @@ public class Controller : MonoBehaviour
 
     private async void OnEnable()
     {
-        while (Locator.Instance.InputManager is null) await Awaitable.NextFrameAsync();
+        while (Locator.Instance.InputManager is null || Locator.Instance.BeatManager is null) await Awaitable.NextFrameAsync();
 
         Locator.Instance.InputManager.OnRelease += Release;
         Locator.Instance.InputManager.OnMove += Move;
         Locator.Instance.InputManager.OnMove_Ended += StopMove;
+        Locator.Instance.BeatManager.OnSemiQuaver += HandleTick;
+        Locator.Instance.BeatManager.OnBeat += HandleBeat;
     }
 
     private void OnDisable()
@@ -65,12 +64,15 @@ public class Controller : MonoBehaviour
         Locator.Instance.InputManager.OnRelease -= Release;
         Locator.Instance.InputManager.OnMove -= Move;
         Locator.Instance.InputManager.OnMove_Ended -= StopMove;
+        Locator.Instance.BeatManager.OnSemiQuaver -= HandleTick;
+        Locator.Instance.BeatManager.OnBeat -= HandleBeat;
     }
 
     private void Start() 
     {
         _body = GetComponent<Rigidbody2D>();
         _powerUpManager = Locator.Instance.PowerUpManager;
+        _beatManager = Locator.Instance.BeatManager;
 
         // Set camera background to theme background
         Camera.main.backgroundColor = Theme.background;
@@ -83,34 +85,6 @@ public class Controller : MonoBehaviour
         }
 
         CreateNewBall();
-    }
-
-    private void Update() 
-    {
-        HandleMusicSync();
-
-        RemoveInactiveBalls();
-
-        HandleReset();
-
-        //Set music based on whether all balls have been launched
-        if (_activeBalls.FindAll(b => b.Served).Count == 0)
-        {
-            _preLaunchLoop.volume = 1;
-            _postLaunchLoop.volume = 0;
-        }
-        else
-        {
-            _preLaunchLoop.volume = 0;
-            _postLaunchLoop.volume = 1;
-        }
-
-        // If we have a ball stuck to the paddle
-        if (_heldBall is Ball) 
-        {
-            // Move the ball to where the paddle is
-            _heldBall.gameObject.transform.position = transform.position + Vector3.up * 0.5f;
-        }
     }
 
     private void Release()
@@ -137,91 +111,92 @@ public class Controller : MonoBehaviour
         _body.linearVelocity = Vector2.zero;
     }
 
+    
+    private void HandleTick(int obj)
+    {
+        PlayBounceSound();
+    }
+
+    private void HandleBeat(int obj)
+    {
+        UpdateBallColour();
+        HandleReleaseCountdown();
+    }
+
+    private void RemoveBall(Ball ball)
+    {
+        ball.OnDestroyed -= RemoveBall;
+        _activeBalls.Remove(ball);
+        if (_activeBalls.Count == 0) HandleBallLost();
+    }
+
+    private void HandleReleaseCountdown()
+    {
+        if (_countdown < 0) return;
+        
+        _countdown--;
+
+        if (_countdown == 4) _sfxSource.PlayOneShot(_countdownSound);
+
+        if (_countdown == 0) ServeBall();
+    }
+
+    private void ServeBall()
+    {
+        _heldBall.transform.parent = null;
+        _heldBall.Serve();
+        _heldBall = null;
+        _preLaunchLoop.volume = 0;
+        _postLaunchLoop.volume = 1;
+    }
+
+    private void UpdateBallColour()
+    {
+        if (_beatManager.BeatCount % 4 != 0) return;
+
+        foreach (var ball in _activeBalls)
+        {
+            ball.SetNewColor();
+            Locator.Instance.GameOverlay.ChangeBallColours();
+        }
+    }
+
+    private void PlayBounceSound()
+    {
+        foreach (var clip in _playNextTick) _melodySource.PlayOneShot(clip);
+        _playNextTick.Clear();
+    }
+
+    private void HandleBallLost()
+    {
+        _sfxSource.PlayOneShot(_arpDownSound);
+        CreateNewBall();
+        _powerUpManager.KillPowerUps();
+        Locator.Instance.GameOverlay.RemoveBall();
+    }
+
     public void CreateNewBall()
     {
-        if (_heldBall == null) 
-        {
-            _heldBall = Instantiate(_ballPrefab).GetComponent<Ball>();
-            _activeBalls.Add(_heldBall);
-            _heldBall.Hold();
-        }
-    }
+        if (_heldBall is Ball) return;
 
-    private void HandleMusicSync()
-    {
-        // Music sync
-        var tickMod = _preLaunchLoop.time % (0.5f / 4f);
-
-        if (tickMod < _lastTickMod)
-        {
-            foreach (var clip in _playNextTick) _melodySource.PlayOneShot(clip);
-            _playNextTick.Clear();
-        }
-
-        _lastTickMod = tickMod;
-
-        var beatMod = _preLaunchLoop.time % 0.5f;
-
-        if (beatMod < _lastBeatMod)
-        {
-            _beats++;
-            _countdown--;
-
-            if (_countdown == 4) _sfxSource.PlayOneShot(_countdownSound);
-
-            if (_countdown == 0)
-            {
-                _heldBall.Serve();
-                _heldBall = null;
-            }
-
-            if (_beats % 4 == 0)
-            {
-                foreach (var ball in _activeBalls)
-                {
-                    ball.SetNewColor();
-                    Locator.Instance.GameOverlay.ChangeBallColours();
-                }
-            }
-        }
-
-        _lastBeatMod = beatMod;
-
-        _changeIndicator.transform.localScale = new Vector3(1, (_preLaunchLoop.time % 2f) / 2f * 10f, 1);
-
-        // Pulse camera in time with music
-        Camera.main.orthographicSize = 5f + (_preLaunchLoop.time % 2f) / 8f + (_preLaunchLoop.time % 0.5f) / 4f;
-    }
-
-    private void RemoveInactiveBalls()
-    {
-        // Remove all balls below the game area
-        var outOfBounds = _activeBalls.Where(b => b.transform.position.y < -6);
-        foreach (var ball in outOfBounds) Destroy(ball.gameObject);
-        _activeBalls.RemoveAll(b => outOfBounds.Contains(b));
-    }
-
-    private void HandleReset()
-    {
-        // If there's no active balls, attach a new one to the paddle
-        if (_activeBalls.Count == 0)
-        {
-            _sfxSource.PlayOneShot(_arpDownSound);
-            CreateNewBall();
-            _powerUpManager.KillPowerUps();
-            Locator.Instance.GameOverlay.RemoveBall();
-        }
+        var heldPos = transform.position + Vector3.up * 0.5f;
+        _heldBall = Instantiate(_ballPrefab, heldPos, Quaternion.identity, transform).GetComponent<Ball>();
+        _activeBalls.Add(_heldBall);
+        _heldBall.OnDestroyed += RemoveBall;
+        _heldBall.Hold();
+        _preLaunchLoop.volume = 1;
+        _postLaunchLoop.volume = 0;
     }
 
     public void HandleBrickBreak(Vector3 location)
     {
-        if (_powerUpManager == null)
+        if (_powerUpManager is null)
         {
             Debug.LogError("Controller cannot find the powerup manager!");
             return;
         }
 
-        if (UnityEngine.Random.Range(0, 1) <= _powerUpPercentage) _powerUpManager.HitBrick(location);
+        if (UnityEngine.Random.value <= _powerUpPercentage) _powerUpManager.SpawnPowerup(location);
     }
 
     public void HandleBounce(Vector3 location) 
@@ -230,25 +205,8 @@ public class Controller : MonoBehaviour
         _playNextTick.Add(clip);
     }
 
-    //Remove if we remove the gravity power up
-    public void AddGravityToBall(float gravity)
-    {
-        foreach(var ball in _activeBalls)
-        {
-            ball.ApplyGravity(gravity);
-        }
-    }
-
     public void ExtendPaddle(float extend) 
     {
-        transform.localScale += new Vector3(extend, 0);
-    }
-
-    public void MultiColourMode(bool mode)
-    {
-        foreach(var ball in _activeBalls)
-        {
-            ball.SetMultiColourMode(mode);
-        }
+        transform.localScale += new Vector3(extend, 0f, 0f);
     }
 }

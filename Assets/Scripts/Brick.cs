@@ -53,7 +53,6 @@ public class Brick : MonoBehaviour
         if (_colorId == ballColor)
         {
             _controller.HandleBrickBreak(transform.position);
-
             foreach (var brick in _neighbours)
             {
                 brick._neighbours.Remove(this);
