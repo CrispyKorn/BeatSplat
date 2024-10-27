@@ -4,13 +4,14 @@ public class Locator : MonoBehaviour
 {
     public static Locator Instance;
 
+    public GameManager GameManager { get; private set; }
     public InputManager InputManager { get; private set; }
-    public Controller Controller { get; private set; }
+    public BeatManager BeatManager { get; private set; }
     public PowerUpManager PowerUpManager { get; private set; }
+    public Controller Controller { get; private set; }
     public Menu Menu { get; private set; }
     public GameOverlay GameOverlay { get; private set; }
     public BrickArea BrickArea { get; private set; }
-    public BeatManager BeatManager { get; private set; }
 
     private void Awake()
     {
@@ -18,19 +19,29 @@ public class Locator : MonoBehaviour
         else Destroy(this);
     }
 
+    public void RegisterInstance(GameManager instance)
+    {
+        if (instance is GameManager) GameManager = instance;
+    }
+
     public void RegisterInstance(InputManager instance)
     {
         if (instance is InputManager) InputManager = instance;
     }
 
-    public void RegisterInstance(Controller instance)
+    public void RegisterInstance(BeatManager instance)
     {
-        if (instance is Controller) Controller = instance;
+        if (instance is BeatManager) BeatManager = instance;
     }
 
     public void RegisterInstance(PowerUpManager instance)
     {
         if (instance is PowerUpManager) PowerUpManager = instance;
+    }
+
+    public void RegisterInstance(Controller instance)
+    {
+        if (instance is Controller) Controller = instance;
     }
 
     public void RegisterInstance(Menu instance)
@@ -48,8 +59,5 @@ public class Locator : MonoBehaviour
         if (instance is BrickArea) BrickArea = instance;
     }
 
-    public void RegisterInstance(BeatManager instance)
-    {
-        if (instance is BeatManager) BeatManager = instance;
-    }
+
 }

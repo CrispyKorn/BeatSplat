@@ -41,6 +41,8 @@ public class Menu : MonoBehaviour
 
         _controller.PlayEnabled = false;
         _resetGame = true;
+
+        Locator.Instance.InputManager.SetActionMap(InputManager.ActionMap.Menu);
     }
 
     public void Exit()
@@ -57,12 +59,12 @@ public class Menu : MonoBehaviour
 
         _controller.PlayEnabled = true;
 
-        _gameOverText.SetActive(true);
-
         _gameOverlay.Setup();
         _gameOverlay.enabled = true;
         _gameOverlay.ChangeBallColours();
 
         gameObject.SetActive(false);
+
+        Locator.Instance.InputManager.SetActionMap(InputManager.ActionMap.Player);
     }
 }

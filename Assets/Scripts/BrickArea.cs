@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class BrickArea : MonoBehaviour 
 {
+    [Tooltip("The size of the spawn area.")]
+    [SerializeField] private Vector2 _spawnAreaSize = new Vector2(10f, 5f);
     [Tooltip("The brick prefab to spawn.")]
     [SerializeField] private GameObject _brick;
     [Tooltip("The size of each brick in units.")]
@@ -29,7 +31,7 @@ public class BrickArea : MonoBehaviour
         // Uses the location generator to render a wireframe in the editor
 
         Gizmos.color = Color.magenta;
-        Gizmos.DrawWireCube(transform.position, transform.localScale);
+        Gizmos.DrawWireCube(transform.position, _spawnAreaSize);
 
         Gizmos.color = Color.cyan;
         foreach (var brickPos in GenerateBrickPositions().Values)
@@ -40,12 +42,12 @@ public class BrickArea : MonoBehaviour
 
     private int GetXCount()
     {
-        return Mathf.FloorToInt(transform.localScale.x / (_brickSize.x + _gap));
+        return Mathf.FloorToInt(_spawnAreaSize.x / (_brickSize.x + _gap));
     }
 
     private int GetYCount()
     {
-        return Mathf.FloorToInt(transform.localScale.y / (_brickSize.y + _gap));
+        return Mathf.FloorToInt(_spawnAreaSize.y / (_brickSize.y + _gap));
     }
 
     private Dictionary<Vector2Int, Vector3> GenerateBrickPositions() 
