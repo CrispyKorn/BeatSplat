@@ -2,19 +2,25 @@
 
 public class PlayerResizePowerUp : PowerUp
 {
-    [Tooltip("This is for how big the player can be, -1 is half the size while 1 is double size.")]
-    [SerializeField, Range(-2f, 2f)] private float _extendAmount = 0.5f;
+    [Tooltip("Multiplier for paddle size.")]
+    [SerializeField, Range(0f, 2f)] private float _sizeMultiplier = 1f;
 
-    private float _extendedSize;
+    private Transform _paddle;
+
+    new private void Awake()
+    {
+        base.Awake();
+
+        _paddle = Locator.Instance.Paddle.PaddleObj.transform;
+    }
 
     public override void ActivatePowerUp()
     {
-        _extendedSize = _powerUpManager.Controller.transform.localScale.x * _extendAmount;
-        _powerUpManager.Controller.ExtendPaddle(_extendedSize);
+        _paddle.localScale = new Vector3(_paddle.localScale.x * _sizeMultiplier, _paddle.localScale.y, 1f);
     }
 
     public override void DeactivatePowerUp()
     {
-        _powerUpManager.Controller.ExtendPaddle(-_extendedSize);
+        _paddle.localScale = new Vector3(_paddle.localScale.x * (1f / _sizeMultiplier), _paddle.localScale.y, 1f);
     }
 }

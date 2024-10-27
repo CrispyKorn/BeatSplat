@@ -103,7 +103,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _duration: 10
-  _timeScaleIncrease: -0.25
+  _speedMultiplier: 0.75
 --- !u!61 &8619725140028448457
 BoxCollider2D:
   m_ObjectHideFlags: 0

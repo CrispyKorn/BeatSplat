@@ -133,7 +133,7 @@ public class BrickArea : MonoBehaviour
         foreach (var key in _grid.Keys)
         {
             var brick = _grid[key];
-            if (brick != null) Destroy(brick.gameObject);
+            if (brick is Brick) Destroy(brick.gameObject);
         }
 
         _grid.Clear();

@@ -8,7 +8,7 @@ public class Locator : MonoBehaviour
     public InputManager InputManager { get; private set; }
     public BeatManager BeatManager { get; private set; }
     public PowerUpManager PowerUpManager { get; private set; }
-    public Paddle Controller { get; private set; }
+    public Paddle Paddle { get; private set; }
     public Menu Menu { get; private set; }
     public GameOverlay GameOverlay { get; private set; }
     public BrickArea BrickArea { get; private set; }
@@ -41,7 +41,7 @@ public class Locator : MonoBehaviour
 
     public void RegisterInstance(Paddle instance)
     {
-        if (instance is Paddle) Controller = instance;
+        if (instance is Paddle) Paddle = instance;
     }
 
     public void RegisterInstance(Menu instance)

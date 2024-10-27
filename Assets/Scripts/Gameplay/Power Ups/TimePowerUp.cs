@@ -8,16 +8,25 @@ public class TimePowerUp : PowerUp
     */
 
     [Header("Change Time Scale")]
-    [Tooltip("0.5 will speed up the time to 1.5 speed, -0.5 will slow the speed to 0.5")]
-    [SerializeField, Range(-1.0f, 1.0f)] private float _timeScaleIncrease = -0.5f;
+    [Tooltip("How much to speed up / slow down time.")]
+    [SerializeField, Range(0f, 2f)] private float _speedMultiplier = 1f;
+
+    private Paddle _paddle;
+
+    new private void Awake()
+    {
+        base.Awake();
+
+        _paddle = Locator.Instance.Paddle;
+    }
 
     public override void ActivatePowerUp()
     {
-        Time.timeScale += _timeScaleIncrease;
+        Ball.s_speedMultiplier *= _speedMultiplier;
     }
 
     public override void DeactivatePowerUp()
     {
-        Time.timeScale -= _timeScaleIncrease;
+        Ball.s_speedMultiplier *= 1f / _speedMultiplier;
     }
 }

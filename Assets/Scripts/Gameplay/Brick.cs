@@ -14,7 +14,7 @@ public class Brick : MonoBehaviour
 
     private void Start() 
     {
-        _controller = Locator.Instance.Controller;
+        _controller = Locator.Instance.Paddle;
         _sprite = GetComponent<SpriteRenderer>();
         _colorId = _controller.Theme.RandomColourID;
     }
@@ -45,23 +45,18 @@ public class Brick : MonoBehaviour
 
     public void AddNeighbour(Brick brick)
     {
-        if (brick != null) _neighbours.Add(brick);
+        if (brick is Brick) _neighbours.Add(brick);
     }
 
     public void HandleBounce(int ballColor)
     {
-        if (_colorId == ballColor)
+        _controller.HandleBrickBreak(transform.position);
+        foreach (var brick in _neighbours)
         {
-            _controller.HandleBrickBreak(transform.position);
-            foreach (var brick in _neighbours)
-            {
-                brick._neighbours.Remove(this);
-                brick.StartFlash();
-            }
-
-            Destroy(gameObject);
+            brick._neighbours.Remove(this);
+            brick.StartFlash();
         }
-        else StartFlash();
+        Destroy(gameObject);
     }
 
     public void StartFlash()

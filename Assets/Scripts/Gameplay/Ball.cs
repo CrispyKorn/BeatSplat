@@ -1,8 +1,12 @@
-﻿using System;
+﻿using NUnit.Framework;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Ball : MonoBehaviour 
 {
+    public static float s_speedMultiplier = 1f;
+
     [Tooltip("The particle system used to create splats.")]
     [SerializeField] private ParticleSystem _splatParticalSystemPrefab;
     [Tooltip("The speed of the ball in units/sec.")]
@@ -13,6 +17,7 @@ public class Ball : MonoBehaviour
     private Collider2D _ballCollider;
     private Rigidbody2D _ballBody;
     private SpriteRenderer _ballRenderer;
+    private TrailRenderer _trailRenderer;
     private int _colorID = 0; // Current colour ID in theme's brick colour list
     private Paddle _controller;
 
@@ -25,18 +30,19 @@ public class Ball : MonoBehaviour
         _ballCollider = GetComponent<Collider2D>();
         _ballBody = GetComponent<Rigidbody2D>();
         _ballRenderer = GetComponent<SpriteRenderer>();
+        _trailRenderer = GetComponent<TrailRenderer>();
     }
 
     private void Start() 
     {
-        _controller = Locator.Instance.Controller;
+        _controller = Locator.Instance.Paddle;
         SetNewColor();
 
-        if (_splatParticalSystemPrefab != null && s_splatParticalSystem == null)
+        if (_splatParticalSystemPrefab is ParticleSystem && s_splatParticalSystem is null)
         {
             s_splatParticalSystem = Instantiate(_splatParticalSystemPrefab, transform.parent);
         }
-        else if (_splatParticalSystemPrefab == null)
+        else if (_splatParticalSystemPrefab is null)
         {
             Debug.LogError("Missing Splatter Partical Ssytem Prefab on ball!");
         }
@@ -49,6 +55,8 @@ public class Ball : MonoBehaviour
 
         Color actualColor = _controller.Theme.brickColours[_colorID];
         _ballRenderer.color = actualColor;
+        _trailRenderer.startColor = actualColor;
+        _trailRenderer.endColor = actualColor;
     }
 
     public void Hold() 
@@ -64,10 +72,15 @@ public class Ball : MonoBehaviour
         Served = true;
         _ballCollider.isTrigger = false;
         _ballBody.bodyType = RigidbodyType2D.Dynamic;
-        _ballBody.linearVelocity = new Vector2(UnityEngine.Random.Range(-1f, 1f), 1f).normalized * _speed;
+        _ballBody.linearVelocity = new Vector2(UnityEngine.Random.Range(-1f, 1f), 1f).normalized;
     }
 
-    void OnCollisionEnter2D(Collision2D hit) 
+    private void LateUpdate()
+    {
+        if (Served) _ballBody.linearVelocity = _ballBody.linearVelocity.normalized * _speed * s_speedMultiplier;
+    }
+
+    void OnCollisionEnter2D(Collision2D hit)
     {
         var brick = hit.gameObject.GetComponent<Brick>(); // Try to find brick component of what we hit
 
@@ -81,12 +94,12 @@ public class Ball : MonoBehaviour
             }
         }
 
-        if (brick != null) brick.HandleBounce(_colorID);
+        if (brick is Brick) brick.HandleBounce(_colorID);
     }
 
     private void SplatterPaint(Vector3 hit)
     {
-        if (s_splatParticalSystem != null)
+        if (s_splatParticalSystem is ParticleSystem)
         {
             s_splatParticalSystem.transform.position = hit;
             s_splatParticalSystem.Play();

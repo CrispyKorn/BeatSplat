@@ -41,17 +41,17 @@ public class BeatManager : MonoBehaviour
 
     private void UpdateBeatFX(float musicBase)
     {
+        // Pulse in time with music
         var timeInBar = musicBase % (_crotchetTime * 4);
-        _changeIndicator.transform.localScale = new Vector3(1f, timeInBar * 5f, 1f);
-
-        // Pulse camera in time with music
         var baseCameraSize = 5f;
         var beatPulseStrength = 4f;
         var barPulseStrength = 8f;
         var barOffset = timeInBar / barPulseStrength;
         var timeInBeat = musicBase % _crotchetTime;
         var beatOffset = timeInBeat / beatPulseStrength;
-        Camera.main.orthographicSize = baseCameraSize + barOffset + beatOffset;
+        var cameraSize = baseCameraSize + barOffset + beatOffset;
+        Camera.main.orthographicSize = cameraSize;
+        _changeIndicator.transform.localScale = new Vector3(1f, timeInBar * cameraSize, 1f);
     }
 
     private void UpdateTick()

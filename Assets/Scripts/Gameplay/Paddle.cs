@@ -6,6 +6,8 @@ public class Paddle : MonoBehaviour
 {
     [HideInInspector] public bool PlayEnabled = true;
 
+    [Tooltip("The actual paddle.")]
+    [SerializeField] private GameObject _paddle;
     [Tooltip("The theme to use for the game.")]
     [SerializeField] private Theme _theme;
     [Tooltip("The movespeed of the player paddle in units/sec.")]
@@ -40,6 +42,8 @@ public class Paddle : MonoBehaviour
     private BeatManager _beatManager;
 
     public Theme Theme { get => _theme; }
+    public GameObject PaddleObj { get => _paddle; }
+    public List<Ball> ActiveBalls { get => _activeBalls; }
 
     private void Awake()
     {
@@ -76,18 +80,36 @@ public class Paddle : MonoBehaviour
         Camera.main.backgroundColor = Theme.background;
         foreach (var obj in GameObject.FindGameObjectsWithTag("Background"))
         {
-            var sprite = obj.GetComponent<SpriteRenderer>();
-            if (sprite != null) sprite.color = Theme.background;
+            var spriteRenderer = obj.GetComponent<SpriteRenderer>();
+            if (spriteRenderer is SpriteRenderer) spriteRenderer.color = Theme.background;
         }
 
         // Set sprite color to theme forground for all objects with the "Foreground" tag
         foreach (var obj in GameObject.FindGameObjectsWithTag("Foreground"))
         {
-            var sprite = obj.GetComponent<SpriteRenderer>();
-            if (sprite != null) sprite.color = Theme.foreground; 
+            var spriteRenderer = obj.GetComponent<SpriteRenderer>();
+            if (spriteRenderer is SpriteRenderer) spriteRenderer.color = Theme.foreground; 
         }
 
         CreateNewBall();
+    }
+
+    private void LateUpdate()
+    {
+        var nextPos = _body.position + (_body.linearVelocity * Time.deltaTime);
+        var paddleExtentsX = _paddle.GetComponent<BoxCollider2D>().bounds.extents.x;
+        var maxX = 7.8f;
+        if (nextPos.x + paddleExtentsX > maxX)
+        {
+            _body.position = new Vector2(maxX - paddleExtentsX, _body.position.y);
+            _body.linearVelocity = Vector2.zero;
+        }
+
+        if (nextPos.x - paddleExtentsX < -maxX)
+        {
+            _body.position = new Vector2(paddleExtentsX - maxX, _body.position.y);
+            _body.linearVelocity = Vector2.zero;
+        }
     }
 
     private void Release()
@@ -210,6 +232,6 @@ public class Paddle : MonoBehaviour
 
     public void ExtendPaddle(float extend) 
     {
-        transform.localScale += new Vector3(extend, 0f, 0f);
+        _paddle.transform.localScale += new Vector3(extend, 0f, 0f);
     }
 }

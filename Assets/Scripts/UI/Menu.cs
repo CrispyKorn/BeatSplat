@@ -21,7 +21,7 @@ public class Menu : MonoBehaviour
     {
         _brickArea = Locator.Instance.BrickArea;
         _gameOverlay = Locator.Instance.GameOverlay;
-        _controller = Locator.Instance.Controller;
+        _controller = Locator.Instance.Paddle;
 
         _gameOverText.SetActive(false);
 

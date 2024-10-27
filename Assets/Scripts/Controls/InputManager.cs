@@ -114,7 +114,8 @@ public class InputManager : MonoBehaviour
     private void Move_performed(InputAction.CallbackContext context)
     {
         UpdateInputDevice(context.control.device);
-        OnMove?.Invoke(context.ReadValue<float>());
+        var inputValue = context.ReadValue<Vector2>().x;
+        OnMove?.Invoke(inputValue);
     }
 
     private void Move_canceled(InputAction.CallbackContext context)
@@ -150,7 +151,8 @@ public class InputManager : MonoBehaviour
     private void Navigate_performed(InputAction.CallbackContext context)
     {
         UpdateInputDevice(context.control.device);
-        OnNavigate?.Invoke(context.ReadValue<Vector2>());
+        var inputValue = context.ReadValue<Vector2>();
+        OnNavigate?.Invoke(inputValue);
     }
     #endregion
 

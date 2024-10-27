@@ -29,9 +29,9 @@ public class GameOverlay : MonoBehaviour
     public void ChangeBallColours()
     {
         _colorID++;
-        if (_colorID == Locator.Instance.Controller.Theme.brickColours.Count) _colorID = 0;
+        if (_colorID == Locator.Instance.Paddle.Theme.brickColours.Count) _colorID = 0;
 
-        Color actualColor = Locator.Instance.Controller.Theme.brickColours[_colorID];
+        Color actualColor = Locator.Instance.Paddle.Theme.brickColours[_colorID];
 
         foreach (Image ball in _balls) ball.color = actualColor;
     }

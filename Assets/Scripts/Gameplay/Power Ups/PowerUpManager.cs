@@ -41,7 +41,7 @@ public class PowerUpManager : MonoBehaviour
 
     private void Start()
     {
-        _controller = Locator.Instance.Controller;
+        _controller = Locator.Instance.Paddle;
 
         if (_rememberedPowerUps > _powerUpList.Count) _rememberedPowerUps = _powerUpList.Count;
 
@@ -105,9 +105,11 @@ public class PowerUpManager : MonoBehaviour
         }
     }
 
-    private void RemovePowerUp(TimerBar obj)
+    private void RemovePowerUp(TimerBar timer)
     {
-        PowerUpInfo powerUp = _activatedPowerUps.Find(p => p.timer == obj);
+        if (!_activatedPowerUps.Exists(p => p.timer == timer)) return;
+
+        PowerUpInfo powerUp = _activatedPowerUps.Find(p => p.timer == timer);
         RemoveActivatedPower(powerUp);
     }
 
@@ -121,7 +123,6 @@ public class PowerUpManager : MonoBehaviour
 
         _activatedPowerUps.Remove(powerUp);
     }
-
 
     //This function moves a powerup to the correct position and scale
     private PowerUpInfo MoveToHolder(PowerUpInfo activatedPowerUp, Transform holder)
@@ -137,17 +138,20 @@ public class PowerUpManager : MonoBehaviour
 
     public void KillPowerUps()
     {
-        for(var i = 0; i < _activatedPowerUps.Count; i++)
+        foreach (var powerUp in _activatedPowerUps)
         {
-            RemoveActivatedPower(_activatedPowerUps[i]);
+            powerUp.powerUp.DeactivatePowerUp();
+
+            Destroy(powerUp.powerUp.gameObject);
+            Destroy(powerUp.timer.gameObject);
         }
+
+        _activatedPowerUps.Clear();
     }
     
     private void Update()
     {
         if (_activatedPowerUps.Count == 0) return;
-
-        List<PowerUpInfo> removePowerUp = new();
 
         for (var i = 0; i < _activatedPowerUps.Count; i++)
         {

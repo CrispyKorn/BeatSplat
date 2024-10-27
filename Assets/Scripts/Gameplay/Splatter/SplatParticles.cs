@@ -20,7 +20,7 @@ public class SplatParticles : MonoBehaviour
     {
         _splatParticleSystem = GetComponent<ParticleSystem>();
 
-        if (_splatHolder == null) _splatHolder = new GameObject("Splat Holder").transform;
+        if (_splatHolder is null) _splatHolder = new GameObject("Splat Holder").transform;
     }
 
     private void OnParticleCollision(GameObject other)
