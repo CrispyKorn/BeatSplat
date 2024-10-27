@@ -9,6 +9,7 @@ public class BeatManager : MonoBehaviour
     [SerializeField] private AudioSource _preLaunchLoop;
     [Tooltip("The bars on the side that show the beat.")]
     [SerializeField] private GameObject _changeIndicator;
+    [SerializeField] private float _musicOffset;
 
     private float _crotchetTime, _semiQuaverTime;
 
@@ -28,7 +29,7 @@ public class BeatManager : MonoBehaviour
 
     private void Update()
     {
-        var musicBase = _preLaunchLoop.time - _semiQuaverTime;
+        var musicBase = _preLaunchLoop.time - _musicOffset;
         var musicTime = musicBase % _crotchetTime;
 
         UpdateBeatFX(musicBase);
@@ -38,16 +39,19 @@ public class BeatManager : MonoBehaviour
         if (canTick) UpdateTick();
     }
 
-    private void UpdateBeatFX(float musicOffset)
+    private void UpdateBeatFX(float musicBase)
     {
-        var timeInBar = musicOffset % (_crotchetTime * 4);
+        var timeInBar = musicBase % (_crotchetTime * 4);
         _changeIndicator.transform.localScale = new Vector3(1f, timeInBar * 5f, 1f);
 
         // Pulse camera in time with music
-        var barOffset = timeInBar / 8f;
-        var timeInBeat = musicOffset % _crotchetTime;
-        var beatOffset = timeInBeat / 4f;
-        Camera.main.orthographicSize = 5f + barOffset + beatOffset;
+        var baseCameraSize = 5f;
+        var beatPulseStrength = 4f;
+        var barPulseStrength = 8f;
+        var barOffset = timeInBar / barPulseStrength;
+        var timeInBeat = musicBase % _crotchetTime;
+        var beatOffset = timeInBeat / beatPulseStrength;
+        Camera.main.orthographicSize = baseCameraSize + barOffset + beatOffset;
     }
 
     private void UpdateTick()
@@ -57,12 +61,9 @@ public class BeatManager : MonoBehaviour
 
         OnSemiQuaver?.Invoke(TickCount);
 
-        if (TickCount == 4)
-        {
-            UpdateBeat();
-        }
-
         TickCount %= 4;
+
+        if (TickCount == 1) UpdateBeat();
     }
 
     private void UpdateBeat()

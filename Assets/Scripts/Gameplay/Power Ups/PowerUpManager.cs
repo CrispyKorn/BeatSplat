@@ -16,7 +16,7 @@ public class PowerUpManager : MonoBehaviour
         public TimerBar timer;
     }
 
-    public Controller Controller => _controller;
+    public Paddle Controller => _controller;
     public int PlayerLayer => _controller.gameObject.layer; // This is to get the player layer, this is used so a power up knows it hit the player and nothing else
 
     [Tooltip("This is for how many power ups to think ahead for, this makes sure we dont see the same power up in at least # of moves")]
@@ -30,7 +30,7 @@ public class PowerUpManager : MonoBehaviour
     [Tooltip("Location of powers when activated")]
     [SerializeField] private List<Transform> _powerUpHolders = new();
 
-    private Controller _controller;
+    private Paddle _controller;
     private List<PowerUpInfo> _activatedPowerUps = new();
     private List<int> _upcomingPowerups = new();
 

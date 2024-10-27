@@ -10,7 +10,7 @@ public class Menu : MonoBehaviour
     private BrickArea _brickArea;
     private GameOverlay _gameOverlay;
     private bool _resetGame = false;
-    private Controller _controller;
+    private Paddle _controller;
 
     private void Awake()
     {
@@ -25,7 +25,7 @@ public class Menu : MonoBehaviour
 
         _gameOverText.SetActive(false);
 
-        if (_controller is Controller) _controller.PlayEnabled = false;
+        if (_controller is Paddle) _controller.PlayEnabled = false;
         else Debug.LogError("No controller found for main menu canvas!");
     }
 

@@ -10,7 +10,7 @@ public class Brick : MonoBehaviour
     private float _lastFlashTime = -1000f;
     private List<Brick> _neighbours = new();
     private SpriteRenderer _sprite;
-    private Controller _controller;
+    private Paddle _controller;
 
     private void Start() 
     {

@@ -1,10 +1,8 @@
-﻿using System.Linq;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using System;
-using UnityEngine.UIElements;
 
-public class Controller : MonoBehaviour 
+public class Paddle : MonoBehaviour
 {
     [HideInInspector] public bool PlayEnabled = true;
 
@@ -76,6 +74,11 @@ public class Controller : MonoBehaviour
 
         // Set camera background to theme background
         Camera.main.backgroundColor = Theme.background;
+        foreach (var obj in GameObject.FindGameObjectsWithTag("Background"))
+        {
+            var sprite = obj.GetComponent<SpriteRenderer>();
+            if (sprite != null) sprite.color = Theme.background;
+        }
 
         // Set sprite color to theme forground for all objects with the "Foreground" tag
         foreach (var obj in GameObject.FindGameObjectsWithTag("Foreground"))

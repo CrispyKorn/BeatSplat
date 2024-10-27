@@ -14,7 +14,7 @@ public class Ball : MonoBehaviour
     private Rigidbody2D _ballBody;
     private SpriteRenderer _ballRenderer;
     private int _colorID = 0; // Current colour ID in theme's brick colour list
-    private Controller _controller;
+    private Paddle _controller;
 
     public bool Served { get; private set; } = false;
 
