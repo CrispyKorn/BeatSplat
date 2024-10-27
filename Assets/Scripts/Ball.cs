@@ -94,12 +94,6 @@ public class Ball : MonoBehaviour
         else Debug.LogError("Missing splatter Partical System on ball!");
     }
 
-    //This is for a powerup that I dont think is fun
-    public void ApplyGravity(float gravity) 
-    {
-        _ballBody.gravityScale += gravity;
-    }
-
     private void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.CompareTag("DeathZone"))
