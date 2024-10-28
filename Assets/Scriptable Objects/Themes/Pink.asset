@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8ae11274854f1534eb79bbc85e3f8bd3, type: 3}
-  m_Name: Blue 2
+  m_Name: Pink
   m_EditorClassIdentifier: 
-  brickColours:
-  - {r: 0.23921569, g: 0.6627451, b: 0.9882353, a: 1}
-  - {r: 0.9372549, g: 0.27058825, b: 0.39607844, a: 1}
-  background: {r: 1, g: 1, b: 0.99607843, a: 1}
-  foreground: {r: 0.37254903, g: 0.42352942, b: 0.48235294, a: 1}
+  _brickColours:
+  - {r: 0.8941177, g: 0.56078434, b: 1, a: 1}
+  - {r: 0.9333334, g: 0.7176471, b: 1, a: 1}
+  _background: {r: 0.17792943, g: 0.111596085, b: 0.199, a: 1}
+  _foreground: {r: 0.97662497, g: 0.901, b: 1, a: 1}

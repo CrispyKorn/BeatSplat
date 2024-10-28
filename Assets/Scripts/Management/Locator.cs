@@ -6,6 +6,7 @@ public class Locator : MonoBehaviour
 
     public GameManager GameManager { get; private set; }
     public InputManager InputManager { get; private set; }
+    public MusicManager MusicManager { get; private set; }
     public BeatManager BeatManager { get; private set; }
     public PowerUpManager PowerUpManager { get; private set; }
     public Paddle Paddle { get; private set; }
@@ -27,6 +28,11 @@ public class Locator : MonoBehaviour
     public void RegisterInstance(InputManager instance)
     {
         if (instance is InputManager) InputManager = instance;
+    }
+
+    public void RegisterInstance(MusicManager instance)
+    {
+        if (instance is MusicManager) MusicManager = instance;
     }
 
     public void RegisterInstance(BeatManager instance)

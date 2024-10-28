@@ -8,6 +8,7 @@ public class GameOverlay : MonoBehaviour
 
     private int _colorID = 0;
     private int _ballsLeft;
+    private Theme _theme;
 
     private void Awake()
     {
@@ -17,6 +18,7 @@ public class GameOverlay : MonoBehaviour
     public void Start()
     {
         foreach(Image ball in _balls) ball.enabled = false;
+        _theme = Locator.Instance.GameManager.Theme;
     }
 
     public void Setup()
@@ -29,9 +31,9 @@ public class GameOverlay : MonoBehaviour
     public void ChangeBallColours()
     {
         _colorID++;
-        if (_colorID == Locator.Instance.Paddle.Theme.brickColours.Count) _colorID = 0;
+        if (_colorID == _theme.BrickColours.Count) _colorID = 0;
 
-        Color actualColor = Locator.Instance.Paddle.Theme.brickColours[_colorID];
+        Color actualColor = _theme.BrickColours[_colorID];
 
         foreach (Image ball in _balls) ball.color = actualColor;
     }

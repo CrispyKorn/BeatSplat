@@ -52,12 +52,12 @@ public class Menu : MonoBehaviour
 
     public void EnableGame()
     {
-        if (_resetGame)
-            _brickArea.ResetBricks();
+        if (_resetGame) _brickArea.ResetBricks();
 
         _resetGame = false;
 
         _controller.PlayEnabled = true;
+        _controller.CreateNewBall();
 
         _gameOverlay.Setup();
         _gameOverlay.enabled = true;

@@ -5,8 +5,6 @@ public class BeatManager : MonoBehaviour
 {
     [Tooltip("The BPM of the music.")]
     [SerializeField] private int _bpm = 120;
-    [Tooltip("Music that plays preceeding ball launch.")]
-    [SerializeField] private AudioSource _preLaunchLoop;
     [Tooltip("The bars on the side that show the beat.")]
     [SerializeField] private GameObject _changeIndicator;
     [SerializeField] private float _musicOffset;
@@ -29,7 +27,7 @@ public class BeatManager : MonoBehaviour
 
     private void Update()
     {
-        var musicBase = _preLaunchLoop.time - _musicOffset;
+        var musicBase = Time.time - _musicOffset;
         var musicTime = musicBase % _crotchetTime;
 
         UpdateBeatFX(musicBase);

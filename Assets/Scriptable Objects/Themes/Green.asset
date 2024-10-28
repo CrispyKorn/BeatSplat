@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8ae11274854f1534eb79bbc85e3f8bd3, type: 3}
-  m_Name: Bright light
+  m_Name: Green
   m_EditorClassIdentifier: 
-  brickColours:
-  - {r: 0, g: 0.92156863, b: 0.78039217, a: 1}
-  - {r: 1, g: 0.32941177, b: 0.4392157, a: 1}
-  - {r: 0.99215686, g: 0.8862745, b: 0.30980393, a: 1}
-  background: {r: 1, g: 1, b: 0.99607843, a: 1}
-  foreground: {r: 0, g: 0.12941177, b: 0.3019608, a: 1}
+  _brickColours:
+  - {r: 0.37254903, g: 0.7960785, b: 0.5647059, a: 1}
+  - {r: 0.73333335, g: 0.91372555, b: 0.81568635, a: 1}
+  _background: {r: 0.09464635, g: 0.199, b: 0.1407561, a: 1}
+  _foreground: {r: 0.901, g: 1, b: 0.94619566, a: 1}

@@ -21,8 +21,10 @@ public class PowerUpManager : MonoBehaviour
 
     [Tooltip("This is for how many power ups to think ahead for, this makes sure we dont see the same power up in at least # of moves")]
     [SerializeField] private int _rememberedPowerUps = 3;
+    [Tooltip("Chance of dropping power ups when a brick is destroyed.")]
+    [SerializeField, Range(0f, 1f)] private float _powerUpPercentage = 0.5f;
     [Tooltip("Speed of falling power-ups in units/sec.")]
-    [SerializeField, Range(0f, 2f)] public float _gravityPowerUp = 0.8f;
+    [SerializeField, Range(0f, 2f)] public float _powerUpFallSpeed = 0.8f;
     [Tooltip("Timerbar used to display the time left on a power-up")]
     [SerializeField] private TimerBar _timerPrefab;
     [Tooltip("What power-ups are in play.")]
@@ -33,6 +35,8 @@ public class PowerUpManager : MonoBehaviour
     private Paddle _controller;
     private List<PowerUpInfo> _activatedPowerUps = new();
     private List<int> _upcomingPowerups = new();
+
+    public float PowerUpPercentage { get => _powerUpPercentage; }
 
     private void Awake()
     {
@@ -66,7 +70,7 @@ public class PowerUpManager : MonoBehaviour
         {
             PowerUp powerUp = Instantiate(_powerUpList[_upcomingPowerups[0]], transform);
 
-            powerUp.SetGravity(_gravityPowerUp);
+            powerUp.SetGravity(_powerUpFallSpeed);
             powerUp.gameObject.transform.position = hitBrick;
 
             _upcomingPowerups.RemoveAt(0);

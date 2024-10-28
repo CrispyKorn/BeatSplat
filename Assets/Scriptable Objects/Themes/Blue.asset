@@ -10,11 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8ae11274854f1534eb79bbc85e3f8bd3, type: 3}
-  m_Name: Dark warm
+  m_Name: Blue
   m_EditorClassIdentifier: 
-  brickColours:
-  - {r: 0.9490196, g: 0.37254903, b: 0.29803923, a: 1}
-  - {r: 0.8980392, g: 0.19215687, b: 0.4392157, a: 1}
-  - {r: 1, g: 0.5372549, b: 0.023529412, a: 1}
-  background: {r: 0.05882353, g: 0.05490196, b: 0.09019608, a: 1}
-  foreground: {r: 1, g: 1, b: 0.99607843, a: 1}
+  _brickColours:
+  - {r: 0.2627451, g: 0.6784314, b: 0.73333335, a: 1}
+  - {r: 0.7294118, g: 0.882353, b: 0.90196085, a: 1}
+  _background: {r: 0.07129946, g: 0.18410166, b: 0.199, a: 1}
+  _foreground: {r: 0.901, g: 0.98875004, b: 1, a: 1}

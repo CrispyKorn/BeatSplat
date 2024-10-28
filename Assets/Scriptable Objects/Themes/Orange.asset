@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8ae11274854f1534eb79bbc85e3f8bd3, type: 3}
-  m_Name: Dark 2
+  m_Name: Orange
   m_EditorClassIdentifier: 
-  brickColours:
-  - {r: 0.49803922, g: 0.3529412, b: 0.9411765, a: 1}
-  - {r: 0.17254902, g: 0.7137255, b: 0.49019608, a: 1}
-  background: {r: 0.08627451, g: 0.09176442, b: 0.101960786, a: 1}
-  foreground: {r: 1, g: 1, b: 0.99607843, a: 1}
+  _brickColours:
+  - {r: 1, g: 0.5137255, b: 0.40000004, a: 1}
+  - {r: 1, g: 0.80392164, b: 0.7568628, a: 1}
+  _background: {r: 0.199, g: 0.102231376, b: 0.0796, a: 1}
+  _foreground: {r: 1, g: 0.9201613, b: 0.901, a: 1}

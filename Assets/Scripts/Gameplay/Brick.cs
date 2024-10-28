@@ -10,20 +10,20 @@ public class Brick : MonoBehaviour
     private float _lastFlashTime = -1000f;
     private List<Brick> _neighbours = new();
     private SpriteRenderer _sprite;
-    private Paddle _controller;
+    private Theme _theme;
 
     private void Start() 
     {
-        _controller = Locator.Instance.Paddle;
         _sprite = GetComponent<SpriteRenderer>();
-        _colorId = _controller.Theme.RandomColourID;
+        _theme = Locator.Instance.GameManager.Theme;
+        _colorId = _theme.RandomColourID;
     }
 
     private void Update()
     {
         float secondsSinceFlash = Mathf.Min(Time.time - _lastFlashTime, _flashDuration);
-        Color mainColor = _controller.Theme.brickColours[_colorId];
-        _sprite.color = Color.Lerp(_controller.Theme.foreground, mainColor, secondsSinceFlash / _flashDuration);
+        Color mainColor = _theme.BrickColours[_colorId];
+        _sprite.color = Color.Lerp(_theme.Foreground, mainColor, secondsSinceFlash / _flashDuration);
     }
 
     private void HandleFlashSpread(List<Brick> affectedBricks)
@@ -50,12 +50,14 @@ public class Brick : MonoBehaviour
 
     public void HandleBounce(int ballColor)
     {
-        _controller.HandleBrickBreak(transform.position);
+        if (Random.value <= Locator.Instance.PowerUpManager.PowerUpPercentage) Locator.Instance.PowerUpManager.SpawnPowerup(transform.position);
+
         foreach (var brick in _neighbours)
         {
             brick._neighbours.Remove(this);
             brick.StartFlash();
         }
+
         Destroy(gameObject);
     }
 
