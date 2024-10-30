@@ -3,68 +3,44 @@ using UnityEngine;
 
 public class Menu : MonoBehaviour
 {
-    [SerializeField] private string _playAgainText = "Play Again?";
+    [SerializeField] private string _playAgainText = "Play Again";
     [SerializeField] private GameObject _gameOverText;
+    [SerializeField] private GameObject _gameWinText;
     [SerializeField] private TextMeshProUGUI _playButtonText;
-
-    private BrickArea _brickArea;
-    private GameOverlay _gameOverlay;
-    private bool _resetGame = false;
-    private Paddle _controller;
 
     private void Awake()
     {
         Locator.Instance.RegisterInstance(this);
     }
 
-    public void Start()
+    private void Start()
     {
-        _brickArea = Locator.Instance.BrickArea;
-        _gameOverlay = Locator.Instance.GameOverlay;
-        _controller = Locator.Instance.Paddle;
-
         _gameOverText.SetActive(false);
-
-        if (_controller is Paddle) _controller.PlayEnabled = false;
-        else Debug.LogError("No controller found for main menu canvas!");
+        _gameWinText.SetActive(false);
     }
 
-    public void ReenableMainMenu()
+    public void StartGame()
     {
-        gameObject.SetActive(true);
+        gameObject.SetActive(false);
+        Locator.Instance.GameManager.StartGame();
     }
 
-    public void MoveToGameOverScreen()
+    public void EnableGameOverScreen()
     {
         _playButtonText.text = _playAgainText;
+        _gameWinText.SetActive(false);
         _gameOverText.SetActive(true);
+    }
 
-        _controller.PlayEnabled = false;
-        _resetGame = true;
-
-        Locator.Instance.InputManager.SetActionMap(InputManager.ActionMap.Menu);
+    public void EnableWinScreen()
+    {
+        _playButtonText.text = _playAgainText;
+        _gameOverText.SetActive(false);
+        _gameWinText.SetActive(true);
     }
 
     public void Exit()
     {
         Application.Quit();
-    }
-
-    public void EnableGame()
-    {
-        if (_resetGame) _brickArea.ResetBricks();
-
-        _resetGame = false;
-
-        _controller.PlayEnabled = true;
-        _controller.CreateNewBall();
-
-        _gameOverlay.Setup();
-        _gameOverlay.enabled = true;
-        _gameOverlay.ChangeBallColours();
-
-        gameObject.SetActive(false);
-
-        Locator.Instance.InputManager.SetActionMap(InputManager.ActionMap.Player);
     }
 }

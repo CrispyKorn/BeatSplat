@@ -11,27 +11,23 @@ public abstract class PowerUp : MonoBehaviour
 
     public float Duration => _duration;
 
-    public void Awake()
+    protected void Awake()
     {
         _body = GetComponent<Rigidbody2D>();
+    }
+
+    private void Start()
+    {
         _powerUpManager = Locator.Instance.PowerUpManager;
     }
 
-    public void SetGravity(float gravity)
-    {
-        _body.gravityScale = gravity;
-    }
-
-    public abstract void ActivatePowerUp();
-    public abstract void DeactivatePowerUp();
-
-    public void OnBecameInvisible()
+    private void OnBecameInvisible()
     {
         //This is for when the object is out of view
         Destroy(gameObject, 1f);
     }
 
-    public void OnCollisionEnter2D(Collision2D collision)
+    private void OnCollisionEnter2D(Collision2D collision)
     {
         //This is for when the powerup hits the player
         if (collision.gameObject.layer == _powerUpManager.PlayerLayer)
@@ -40,9 +36,18 @@ public abstract class PowerUp : MonoBehaviour
         }
     }
 
+    public void SetGravity(float gravity)
+    {
+        _body.gravityScale = gravity;
+    }
+
     public void Freeze()
     {
         //This is used to freeze the power up in a position
         _body.constraints = RigidbodyConstraints2D.FreezeAll;
     }
+
+    public abstract void ActivatePowerUp();
+
+    public abstract void DeactivatePowerUp();
 }

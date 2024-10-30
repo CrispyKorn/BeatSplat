@@ -12,7 +12,7 @@ public class TitleColourCycle : MonoBehaviour
 
     private async void OnEnable()
     {
-        while (Locator.Instance.BeatManager is null) await Awaitable.NextFrameAsync();
+        while (Locator.Instance.BeatManager == null) await Awaitable.NextFrameAsync();
 
         Locator.Instance.BeatManager.OnBeat += CycleColour;
     }
@@ -22,9 +22,8 @@ public class TitleColourCycle : MonoBehaviour
         Locator.Instance.BeatManager.OnBeat -= CycleColour;
     }
 
-    private void CycleColour(int beatCount)
+    private void CycleColour()
     {
-        //Debug.Log($"Cycle Beat: {beatCount}");
         _titleText.color = new Color(Random.value, Random.value, Random.value);
     }
 }

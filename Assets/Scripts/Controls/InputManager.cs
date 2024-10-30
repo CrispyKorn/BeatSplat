@@ -198,8 +198,8 @@ public class InputManager : MonoBehaviour
 
     private void UpdateInputDevice(InputDevice inputDevice)
     {
-        if (inputDevice is Gamepad) CurrentInputDevice = PlayerInputDevice.Gamepad;
-        if (inputDevice is Keyboard || inputDevice is Mouse) CurrentInputDevice = PlayerInputDevice.KBM;
+        if (inputDevice != null) CurrentInputDevice = PlayerInputDevice.Gamepad;
+        if (inputDevice != null || inputDevice != null) CurrentInputDevice = PlayerInputDevice.KBM;
     }
 
     public void SetCursorMode(bool locked)

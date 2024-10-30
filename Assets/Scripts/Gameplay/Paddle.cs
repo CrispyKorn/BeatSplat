@@ -4,8 +4,6 @@ using System;
 
 public class Paddle : MonoBehaviour
 {
-    [HideInInspector] public bool PlayEnabled = true;
-
     [Tooltip("The actual paddle.")]
     [SerializeField] private GameObject _paddle;
     [Tooltip("The movespeed of the player paddle in units/sec.")]
@@ -28,7 +26,7 @@ public class Paddle : MonoBehaviour
     private Rigidbody2D _body;
     private Ball _heldBall;
     private BeatManager _beatManager;
-    private BoxCollider2D _paddleCollider;
+    private Collider2D _paddleCollider;
     private MusicManager _musicManager;
     private SoundPlayer _soundPlayer;
 
@@ -39,18 +37,19 @@ public class Paddle : MonoBehaviour
     {
         Locator.Instance.RegisterInstance(this);
 
-        _paddleCollider = _paddle.GetComponent<BoxCollider2D>();
+        _paddleCollider = _paddle.GetComponent<Collider2D>();
         _soundPlayer = GetComponent<SoundPlayer>();
     }
 
     private async void OnEnable()
     {
-        while (Locator.Instance.InputManager is null || Locator.Instance.BeatManager is null) await Awaitable.NextFrameAsync();
+        while (Locator.Instance.InputManager == null || Locator.Instance.BeatManager == null) await Awaitable.NextFrameAsync();
 
         Locator.Instance.InputManager.OnRelease += Release;
         Locator.Instance.InputManager.OnMove += Move;
         Locator.Instance.InputManager.OnMove_Ended += StopMove;
         Locator.Instance.BeatManager.OnBeat += HandleBeat;
+        Locator.Instance.BeatManager.OnBar += HandleBar;
     }
 
     private void OnDisable()
@@ -59,6 +58,7 @@ public class Paddle : MonoBehaviour
         Locator.Instance.InputManager.OnMove -= Move;
         Locator.Instance.InputManager.OnMove_Ended -= StopMove;
         Locator.Instance.BeatManager.OnBeat -= HandleBeat;
+        Locator.Instance.BeatManager.OnBar -= HandleBar;
     }
 
     private void Start() 
@@ -67,22 +67,6 @@ public class Paddle : MonoBehaviour
         _powerUpManager = Locator.Instance.PowerUpManager;
         _beatManager = Locator.Instance.BeatManager;
         _musicManager = Locator.Instance.MusicManager;
-
-        // Set camera background to theme background
-        var theme = Locator.Instance.GameManager.Theme;
-        Camera.main.backgroundColor = theme.Background;
-        foreach (var obj in GameObject.FindGameObjectsWithTag("Background"))
-        {
-            var spriteRenderer = obj.GetComponent<SpriteRenderer>();
-            if (spriteRenderer is SpriteRenderer) spriteRenderer.color = theme.Background;
-        }
-
-        // Set sprite color to theme forground for all objects with the "Foreground" tag
-        foreach (var obj in GameObject.FindGameObjectsWithTag("Foreground"))
-        {
-            var spriteRenderer = obj.GetComponent<SpriteRenderer>();
-            if (spriteRenderer is SpriteRenderer) spriteRenderer.color = theme.Foreground; 
-        }
     }
 
     private void LateUpdate()
@@ -105,9 +89,9 @@ public class Paddle : MonoBehaviour
 
     private void Release()
     {
-        if (_heldBall is null) return;
+        if (_heldBall == null) return;
 
-        if (_countdown < 0 && PlayEnabled)
+        if (_countdown < 0)
         {
             _countdown = 5;
             _soundPlayer.SwitchSound(_arpUpSound);
@@ -117,8 +101,6 @@ public class Paddle : MonoBehaviour
 
     private void Move(float movement)
     {
-        if (!PlayEnabled) return;
-
         _body.linearVelocity = Vector2.right * _moveSpeed * movement;
     }
 
@@ -127,10 +109,14 @@ public class Paddle : MonoBehaviour
         _body.linearVelocity = Vector2.zero;
     }
 
-    private void HandleBeat(int beatCount)
+    private void HandleBeat()
+    {
+        HandleReleaseCountdown();
+    }
+
+    private void HandleBar()
     {
         UpdateBallColour();
-        HandleReleaseCountdown();
     }
 
     private void RemoveBall(Ball ball)
@@ -165,8 +151,6 @@ public class Paddle : MonoBehaviour
 
     private void UpdateBallColour()
     {
-        if (_beatManager.BeatCount % 4 != 0) return;
-
         foreach (var ball in _activeBalls)
         {
             ball.SetNewColor();
@@ -203,9 +187,9 @@ public class Paddle : MonoBehaviour
 
     public void CreateNewBall()
     {
-        if (_heldBall is Ball) return;
+        if (_heldBall != null) return;
 
-        var heldPos = transform.position + Vector3.up * 0.5f;
+        var heldPos = transform.position + Vector3.up;
         _heldBall = Instantiate(_ballPrefab, heldPos, Quaternion.identity, transform).GetComponent<Ball>();
         _activeBalls.Add(_heldBall);
         _heldBall.OnDestroyed += RemoveBall;

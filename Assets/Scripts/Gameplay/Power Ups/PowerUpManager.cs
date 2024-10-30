@@ -52,60 +52,23 @@ public class PowerUpManager : MonoBehaviour
         RefreshNextPowerUps();
     }
 
+    private void Update()
+    {
+        if (_activatedPowerUps.Count == 0) return;
+
+        for (var i = 0; i < _activatedPowerUps.Count; i++)
+        {
+            MoveToHolder(_activatedPowerUps[i], _powerUpHolders[i]);
+        }
+    }
+
     private void RefreshNextPowerUps()
     {
         while (_upcomingPowerups.Count < _rememberedPowerUps)
         {
-            int next = Random.Range(0, _powerUpList.Count);
+            var next = Random.Range(0, _powerUpList.Count);
 
             if (!_upcomingPowerups.Contains(next)) _upcomingPowerups.Add(next);
-        }
-    }
-
-    // This is used when the controller thinks a power up should come out of a brick
-    // Creates the power up and randomly chooses one, sets all the settings it needs
-    public void SpawnPowerup(Vector2 hitBrick)
-    {
-        if (_powerUpList.Count > 0)
-        {
-            PowerUp powerUp = Instantiate(_powerUpList[_upcomingPowerups[0]], transform);
-
-            powerUp.SetGravity(_powerUpFallSpeed);
-            powerUp.gameObject.transform.position = hitBrick;
-
-            _upcomingPowerups.RemoveAt(0);
-            RefreshNextPowerUps();
-        }
-        else Debug.LogError("No power ups attached to power up manager");
-    }
-
-    public void ActivatePowerUp(PowerUp powerUp)
-    {
-        PowerUpInfo activatedPowerUp = new PowerUpInfo();
-
-        if (_activatedPowerUps.Count >= _powerUpHolders.Count) RemoveActivatedPower(_activatedPowerUps[0]); // Make sure there is a holder spare. Otherwise, delete the first one
-
-        powerUp.Freeze();
-        powerUp.ActivatePowerUp();
-        activatedPowerUp.powerUp = powerUp;
-
-        //Create the timer for the power up
-        if (_timerPrefab is TimerBar)
-        {
-            TimerBar tempTimer = Instantiate(_timerPrefab, powerUp.transform);
-            tempTimer.TimeLeft = powerUp.Duration;
-            tempTimer.Active = true;
-
-            activatedPowerUp.timer = tempTimer;
-        }
-        else Debug.Log("Missing Timer in Power-Up Manager!");
-
-        //Make sure the powerup and the timer are set, add to the list of activated power ups and also move to the correct location/holder
-        if (activatedPowerUp.powerUp is PowerUp && activatedPowerUp.timer is TimerBar)
-        {
-            if (activatedPowerUp.timer.TimeLeft > 0f) activatedPowerUp.timer.OnTimerFinished += RemovePowerUp;
-            MoveToHolder(activatedPowerUp, _powerUpHolders[_activatedPowerUps.Count]);
-            _activatedPowerUps.Add(activatedPowerUp);
         }
     }
 
@@ -113,7 +76,7 @@ public class PowerUpManager : MonoBehaviour
     {
         if (!_activatedPowerUps.Exists(p => p.timer == timer)) return;
 
-        PowerUpInfo powerUp = _activatedPowerUps.Find(p => p.timer == timer);
+        var powerUp = _activatedPowerUps.Find(p => p.timer == timer);
         RemoveActivatedPower(powerUp);
     }
 
@@ -140,6 +103,53 @@ public class PowerUpManager : MonoBehaviour
         return activatedPowerUp;
     }
 
+    // This is used when the controller thinks a power up should come out of a brick
+    // Creates the power up and randomly chooses one, sets all the settings it needs
+    public void SpawnPowerup(Vector2 hitBrick)
+    {
+        if (_powerUpList.Count > 0)
+        {
+            PowerUp powerUp = Instantiate(_powerUpList[_upcomingPowerups[0]], transform);
+
+            powerUp.SetGravity(_powerUpFallSpeed);
+            powerUp.gameObject.transform.position = new Vector3(hitBrick.x, hitBrick.y, 0f);
+
+            _upcomingPowerups.RemoveAt(0);
+            RefreshNextPowerUps();
+        }
+        else Debug.LogError("No power ups attached to power up manager");
+    }
+
+    public void ActivatePowerUp(PowerUp powerUp)
+    {
+        var activatedPowerUp = new PowerUpInfo();
+
+        if (_activatedPowerUps.Count >= _powerUpHolders.Count) RemoveActivatedPower(_activatedPowerUps[0]); // Make sure there is a holder spare. Otherwise, delete the first one
+
+        powerUp.Freeze();
+        powerUp.ActivatePowerUp();
+        activatedPowerUp.powerUp = powerUp;
+
+        //Create the timer for the power up
+        if (_timerPrefab != null)
+        {
+            TimerBar tempTimer = Instantiate(_timerPrefab, powerUp.transform);
+            tempTimer.TimeLeft = powerUp.Duration;
+            tempTimer.Active = true;
+
+            activatedPowerUp.timer = tempTimer;
+        }
+        else Debug.Log("Missing Timer in Power-Up Manager!");
+
+        //Make sure the powerup and the timer are set, add to the list of activated power ups and also move to the correct location/holder
+        if (activatedPowerUp.powerUp != null && activatedPowerUp.timer != null)
+        {
+            if (activatedPowerUp.timer.TimeLeft > 0f) activatedPowerUp.timer.OnTimerFinished += RemovePowerUp;
+            MoveToHolder(activatedPowerUp, _powerUpHolders[_activatedPowerUps.Count]);
+            _activatedPowerUps.Add(activatedPowerUp);
+        }
+    }
+
     public void KillPowerUps()
     {
         foreach (var powerUp in _activatedPowerUps)
@@ -151,15 +161,5 @@ public class PowerUpManager : MonoBehaviour
         }
 
         _activatedPowerUps.Clear();
-    }
-    
-    private void Update()
-    {
-        if (_activatedPowerUps.Count == 0) return;
-
-        for (var i = 0; i < _activatedPowerUps.Count; i++)
-        {
-            MoveToHolder(_activatedPowerUps[i], _powerUpHolders[i]);
-        }
     }
 }

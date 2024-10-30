@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Brick : MonoBehaviour 
@@ -12,6 +13,8 @@ public class Brick : MonoBehaviour
     private SpriteRenderer _sprite;
     private Theme _theme;
 
+    public event Action OnDestroyed;
+
     private void Start() 
     {
         _sprite = GetComponent<SpriteRenderer>();
@@ -21,8 +24,8 @@ public class Brick : MonoBehaviour
 
     private void Update()
     {
-        float secondsSinceFlash = Mathf.Min(Time.time - _lastFlashTime, _flashDuration);
-        Color mainColor = _theme.BrickColours[_colorId];
+        var secondsSinceFlash = Mathf.Min(Time.time - _lastFlashTime, _flashDuration);
+        var mainColor = _theme.BrickColours[_colorId];
         _sprite.color = Color.Lerp(_theme.Foreground, mainColor, secondsSinceFlash / _flashDuration);
     }
 
@@ -45,12 +48,14 @@ public class Brick : MonoBehaviour
 
     public void AddNeighbour(Brick brick)
     {
-        if (brick is Brick) _neighbours.Add(brick);
+        if (brick != null) _neighbours.Add(brick);
     }
 
     public void HandleBounce(int ballColor)
     {
-        if (Random.value <= Locator.Instance.PowerUpManager.PowerUpPercentage) Locator.Instance.PowerUpManager.SpawnPowerup(transform.position);
+        if (ballColor != _colorId) return;
+
+        if (UnityEngine.Random.value <= Locator.Instance.PowerUpManager.PowerUpPercentage) Locator.Instance.PowerUpManager.SpawnPowerup(transform.position);
 
         foreach (var brick in _neighbours)
         {
@@ -58,6 +63,7 @@ public class Brick : MonoBehaviour
             brick.StartFlash();
         }
 
+        OnDestroyed?.Invoke();
         Destroy(gameObject);
     }
 

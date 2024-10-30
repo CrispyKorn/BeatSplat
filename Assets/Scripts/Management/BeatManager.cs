@@ -14,8 +14,9 @@ public class BeatManager : MonoBehaviour
     public int TickCount { get; private set; }
     public int BeatCount { get; private set; }
 
-    public event Action<int> OnSemiQuaver;
-    public event Action<int> OnBeat;
+    public event Action OnSemiQuaver;
+    public event Action OnBeat;
+    public event Action OnBar;
 
     private void Awake()
     {
@@ -57,7 +58,7 @@ public class BeatManager : MonoBehaviour
         TickCount++;
         //Debug.Log($"Tick {TickCount}");
 
-        OnSemiQuaver?.Invoke(TickCount);
+        OnSemiQuaver?.Invoke();
 
         TickCount %= 4;
 
@@ -69,6 +70,15 @@ public class BeatManager : MonoBehaviour
         BeatCount++;
         //Debug.Log($"Beat {BeatCount}");
 
-        OnBeat?.Invoke(BeatCount);
+        OnBeat?.Invoke();
+
+        BeatCount %= 4;
+
+        if (BeatCount == 1) UpdateBar();
+    }
+
+    private void UpdateBar()
+    {
+        OnBar?.Invoke();
     }
 }

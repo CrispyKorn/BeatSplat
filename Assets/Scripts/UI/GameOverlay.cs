@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 public class GameOverlay : MonoBehaviour
 {
-    [SerializeField] private List<Image> _balls = new();
+    [SerializeField] private List<Image> _ballImages = new();
 
     private int _colorID = 0;
     private int _ballsLeft;
@@ -15,17 +15,17 @@ public class GameOverlay : MonoBehaviour
         Locator.Instance.RegisterInstance(this);
     }
 
-    public void Start()
+    private void Start()
     {
-        foreach(Image ball in _balls) ball.enabled = false;
+        foreach(var ballImage in _ballImages) ballImage.enabled = false;
         _theme = Locator.Instance.GameManager.Theme;
     }
 
     public void Setup()
     {
-        foreach (Image ball in _balls) ball.enabled = true;
+        foreach (var ballImage in _ballImages) ballImage.enabled = true;
 
-        _ballsLeft = _balls.Count;
+        _ballsLeft = _ballImages.Count;
     }
 
     public void ChangeBallColours()
@@ -33,9 +33,9 @@ public class GameOverlay : MonoBehaviour
         _colorID++;
         if (_colorID == _theme.BrickColours.Count) _colorID = 0;
 
-        Color actualColor = _theme.BrickColours[_colorID];
+        var actualColor = _theme.BrickColours[_colorID];
 
-        foreach (Image ball in _balls) ball.color = actualColor;
+        foreach (var ballImage in _ballImages) ballImage.color = actualColor;
     }
 
     public void RemoveBall()
@@ -44,9 +44,8 @@ public class GameOverlay : MonoBehaviour
 
         if (_ballsLeft < 0)
         {
-            Locator.Instance.Menu.ReenableMainMenu();
-            Locator.Instance.Menu.MoveToGameOverScreen();
+            Locator.Instance.GameManager.EndGame(false);
         }
-        else _balls[_balls.Count - _ballsLeft - 1].enabled = false;
+        else _ballImages[_ballImages.Count - _ballsLeft - 1].enabled = false;
     }
 }

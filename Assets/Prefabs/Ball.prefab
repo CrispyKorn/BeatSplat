@@ -105,7 +105,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51deea5d4ef866042a57995406252f1f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _splatParticalSystemPrefab: {fileID: 4364462615869364575, guid: 892d835a05f6825458c44769c21f2547, type: 3}
+  _splatPrefab: {fileID: 1561304413443607707, guid: acd108bd209261b47b798fbb8b261144, type: 3}
+  _splatHolder: {fileID: 0}
   _speed: 7
   _bounceSounds:
   - {fileID: 11400000, guid: 985ca60c7544e974eb36bab56028ea22, type: 2}

@@ -21,7 +21,7 @@ public class SoundPlayer : MonoBehaviour
     /// </summary>
     private void SetupAudio()
     {
-        if (_sound is null) return;
+        if (_sound == null) return;
 
         _source.playOnAwake = false;
         _source.clip = _sound.Clip;
@@ -39,7 +39,7 @@ public class SoundPlayer : MonoBehaviour
     /// <param name="mutate">Whether or not to make minor modifications to add variety.</param>
     public void PlaySound(bool mutate = false, bool canStack = false)
     {
-        if (_sound is null) return;
+        if (_sound == null) return;
 
         if (!mutate)
         {
